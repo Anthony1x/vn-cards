@@ -27,7 +27,7 @@ You also need to replace the temporary file's names in in the last lines of `mai
 
 As you can maybe tell, I didn't write the script with public use exactly in mind.
 
-Maybe I will make it more generic in the future, but, you know, it works ¯\_(ツ)_/¯
+Maybe I will make it more generic in the future, but, you know, it works ¯\\_(ツ)_/¯
 
 ## Credit
 Some code taken from [RecordAudioOutput](https://github.com/JayXT/RecordAudioOutput) and anacreons [animecards mpv script](https://anacreondjt.gitlab.io/docs/mpvscript/)
