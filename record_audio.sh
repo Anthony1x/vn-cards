@@ -3,7 +3,7 @@
 screenshot="$(xdg-user-dir DOCUMENTS)/tmp/ankiscreenie.png"
 audio="$(xdg-user-dir DOCUMENTS)/tmp/ankirecording.wav"
 
-php_scrpt="$(xdg-user-dir DOCUMENTS)/Dev/anki_connect/main.php"
+php_scrpt="$(xdg-user-dir DOCUMENTS)/Dev/vn-cards/main.php"
 
 if pgrep pw-record; then
     # Stop recording audio
