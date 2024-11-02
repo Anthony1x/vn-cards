@@ -113,8 +113,8 @@ if ($test_env === true) {
 
 $stamp = time();
 
-$image_tmp = "/home/anthony/Documents/tmp/ankiscreenie.png";
-$image = "anthony_custom_$stamp.png";
+$image_tmp = "/home/anthony/Documents/tmp/ankiscreenie.webp";
+$image = "anthony_custom_$stamp.webp";
 copy($image_tmp,  $prefix . "/$image");
 
 if ($do_not_record === false) {
