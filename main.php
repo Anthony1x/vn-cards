@@ -123,4 +123,4 @@ if ($do_not_record === false) {
     copy($audio_tmp, $prefix . "/$audio");
 }
 
-add_to_last_added($image, $audio, get_clipboard());
+add_to_last_added($image, $audio, null);
