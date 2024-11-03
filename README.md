@@ -17,14 +17,6 @@ I've personally set it to `Meta+M`.
 
 Adjust the scripts to fit your needs (i.e. screen position and resolution) as they are made to specifically fit my use cases as-is.
 
-Specifically, you definitely need to replace the `pw-record` target option.
-
-You can figure out your primary output device by running `pw-cli ls Node`.
-
-Paste in the `object.serial` identifier, not the primary one.
-
-You also need to replace the temporary file's names in in the last lines of `main.php`.
-
 As you can maybe tell, I didn't write the script with public use exactly in mind.
 
 Maybe I will make it more generic in the future, but, you know, it works ¯\\\_(ツ)_/¯
