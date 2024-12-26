@@ -3,7 +3,7 @@
 screenshot="$(xdg-user-dir DOCUMENTS)/tmp/ankiscreenie.webp"
 audio="$(xdg-user-dir DOCUMENTS)/tmp/ankirecording.wav"
 
-php_scrpt="$(xdg-user-dir DOCUMENTS)/Dev/vn-cards/main.php"
+php_script="$(xdg-user-dir DOCUMENTS)/Dev/vn-cards/main.php"
 
 if pgrep pw-record; then
     # Stop recording audio
@@ -12,7 +12,7 @@ if pgrep pw-record; then
     dunstify "Recording finished" -r 6969
 
     # Add to anki card using php script
-    php $php_scrpt
+    php $php_script
 
     rm $screenshot
     rm $audio
