@@ -13,7 +13,6 @@ if (in_array('--test-env', $argv)) {
     $test_env = true;
 }
 
-
 // Anki collection media path. Ensure Anki username is correct.
 $prefix = getenv("HOME") . "/.local/share/Anki2/User 1/collection.media";
 
@@ -31,6 +30,13 @@ function add_to_last_added(string $image, ?string $audio = null, ?string $text =
     }
 
     $word = $note_info->result[0]->fields->{FRONT_FIELD}->value;
+
+    $current_image = $note_info->result[0]->fields->{IMAGE_FIELD}->value;
+
+    if (!empty($current_image) && $current_image != '<img src="">') {
+        al_log("Image field in newest card ({$word}) is not empty! Aborting");
+        die;
+    }
 
     $new_fields = [
         IMAGE_FIELD => "<img src='$image'>",
