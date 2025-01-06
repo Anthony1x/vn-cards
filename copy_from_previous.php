@@ -10,6 +10,8 @@ $all_cards = get_all_cards();
 $collecting = false;
 $cards_to_update = [];
 
+$get_expression = fn($card) => $card->fields->{FRONT_FIELD}->value;
+
 foreach ($all_cards as $key => $card) {
     $tags = $card->tags;
 
@@ -41,12 +43,13 @@ foreach ($all_cards as $key => $card) {
         $collecting = [
             IMAGE_FIELD => $card->fields->{IMAGE_FIELD}->value,
             SENTENCE_AUDIO_FIELD => $card->fields->{SENTENCE_AUDIO_FIELD}->value,
+            'debug_expr_val' => $card->fields->{FRONT_FIELD}->value,
         ];
     }
 
     if ($stop_collecting) {
 
-        $cards_expr = array_map(fn($card) => $card->fields->Expression->value, $cards_to_update);
+        $cards_expr = array_map(fn($card) => $card->fields->{FRONT_FIELD}->value, $cards_to_update);
         $cards_str = implode(', ', $cards_expr);
 
         anki_log("Tagging these cards: $cards_str");

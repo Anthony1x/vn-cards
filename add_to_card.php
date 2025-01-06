@@ -13,9 +13,6 @@ if (in_array('--test-env', $argv)) {
     $test_env = true;
 }
 
-// Anki collection media path. Ensure Anki username is correct.
-$prefix = getenv("HOME") . "/.local/share/Anki2/User 1/collection.media";
-
 function add_to_last_added(string $image, ?string $audio = null, ?string $text = null)
 {
     // Fuck yeah php
@@ -74,12 +71,12 @@ $stamp = time();
 
 $image_tmp = "/home/anthony/Documents/tmp/ankiscreenie.webp";
 $image = "anthony_custom_$stamp.webp";
-copy($image_tmp,  $prefix . "/$image");
+copy($image_tmp,  PREFIX . "/$image");
 
 if ($do_not_record === false) {
     $audio_tmp = "/home/anthony/Documents/tmp/ankirecording.wav";
     $audio = "anthony_custom_$stamp.wav";
-    copy($audio_tmp, $prefix . "/$audio");
+    copy($audio_tmp, PREFIX . "/$audio");
 }
 
 add_to_last_added($image, $audio ?? null, null);

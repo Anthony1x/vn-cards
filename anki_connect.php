@@ -1,5 +1,7 @@
 <?php
 
+const DECK_NAME = 'deck:日本語::Mining';
+
 const FRONT_FIELD = "Expression";
 const SENTENCE_AUDIO_FIELD = "SentenceAudio";
 const SENTENCE_FIELD = "Sentence";
@@ -7,6 +9,9 @@ const IMAGE_FIELD = "Picture";
 
 const START_HERE = 'start_collecting';
 const STOP_HERE = 'stop_collecting';
+
+// Anki collection media path. Ensure Anki username is correct.
+define('PREFIX', getenv("HOME") . "/.local/share/Anki2/User 1/collection.media");
 
 function anki_connect(string $action, array $params)
 {
@@ -69,11 +74,11 @@ function add_tags_to_card($card, string ...$tags)
     ]);
 }
 
-function get_all_cards()
+function get_all_cards(string $deck = DECK_NAME)
 {
-    $res = anki_connect('findCards', ['query' => 'deck:日本語::Mining'])->result;
+    $note_ids = anki_connect('findCards', ['query' => $deck])->result;
 
-    $note_info = anki_connect('notesInfo', ['notes' => $res])->result;
+    $note_info = anki_connect('cardsInfo', ['cards' => $note_ids])->result;
 
     return array_filter((array)$note_info, fn($note) => !empty((array)$note));
 }
