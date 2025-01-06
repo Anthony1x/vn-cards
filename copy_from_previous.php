@@ -19,12 +19,15 @@ foreach ($all_cards as $key => $card) {
     // Check for errors first
 
     if ($stop_collecting && $collecting === false) {
-        al_log("Stop tag without start tag found!");
+        $expr = $get_expression($card);
+        anki_log("Stop tag without start tag found on card: $expr!", Urgency::critical);
         return;
     }
 
     if ($start_collecting && $collecting !== false) {
-        al_log("Two start tags without stop tag found!");
+        $expr = $get_expression($card);
+        $a = $collecting['debug_expr_val'];
+        anki_log("Two start tags without stop tag found on card: $expr! Start tag is $a", Urgency::critical);
         return;
     }
 
@@ -46,8 +49,7 @@ foreach ($all_cards as $key => $card) {
         $cards_expr = array_map(fn($card) => $card->fields->Expression->value, $cards_to_update);
         $cards_str = implode(', ', $cards_expr);
 
-        al_log("Tagging these cards: $cards_str", $key);
-
+        anki_log("Tagging these cards: $cards_str");
 
         foreach ($cards_to_update as $card_to_update) {
             anki_connect('updateNoteFields', [
@@ -63,9 +65,8 @@ foreach ($all_cards as $key => $card) {
     }
 }
 
-
 if ($collecting !== false) {
-    al_log("Loop finished, but no final stop tag found!");
+    anki_log("Loop finished, but no final stop tag found!");
     die();
 }
 

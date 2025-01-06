@@ -37,7 +37,7 @@ function anki_connect(string $action, array $params)
     curl_close($curl);
 
     if ($err) {
-        shell_exec("dunstify 'cURL reported error: $err, aborting.'");
+        anki_log("cURL reported error: $err, aborting.", Urgency::critical);
         die;
     }
 
@@ -49,7 +49,7 @@ function get_latest_card()
     $last_note = anki_connect('findNotes',  ['query' => 'added:1'])->result;
 
     if (empty($last_note) || is_null($last_note)) {
-        shell_exec("dunstify 'No recently added cards found! Aborting.'");
+        anki_log('No recently added cards found! Aborting.', Urgency::critical);
         die;
     }
 
@@ -58,7 +58,6 @@ function get_latest_card()
 
     return $last_note;
 }
-
 
 function add_tags_to_card($card, string ...$tags)
 {
@@ -79,7 +78,15 @@ function get_all_cards()
     return array_filter((array)$note_info, fn($note) => !empty((array)$note));
 }
 
-function al_log(string $message, int $id = 6969, ?int $loglevel = null)
+function anki_log(string $message, Urgency $loglevel = Urgency::low)
 {
-    shell_exec("dunstify '$message' -r $id");
+    // See `man notify-send` if you want to know what all these do.
+    shell_exec("notify-send -a ankivn -r 6969 -u {$loglevel->name} -t 5000 '$message'");
+}
+
+enum Urgency: string
+{
+    case low = 'low';
+    case normal = 'normal';
+    case critical = 'critical';
 }

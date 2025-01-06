@@ -25,7 +25,7 @@ function add_to_last_added(string $image, ?string $audio = null, ?string $text =
     $note_info = anki_connect('notesInfo', ['notes' => [$last_note]]);
 
     if (is_null($note_info)) {
-        shell_exec("dunstify 'No note info! Aborting.'");
+        anki_log('No note info! Aborting.', Urgency::critical);
         die;
     }
 
@@ -34,7 +34,7 @@ function add_to_last_added(string $image, ?string $audio = null, ?string $text =
     $current_image = $note_info->result[0]->fields->{IMAGE_FIELD}->value;
 
     if (!empty($current_image) && $current_image != '<img src="">') {
-        al_log("Image field in newest card ({$word}) is not empty! Aborting");
+        anki_log("Image field in newest card ({$word}) is not empty! Aborting");
         die;
     }
 
@@ -57,7 +57,7 @@ function add_to_last_added(string $image, ?string $audio = null, ?string $text =
         ]);
     }
 
-    shell_exec("dunstify 'Successfully added to word: $word'");
+    anki_log("Successfully added to word: $word");
 }
 
 function get_clipboard()

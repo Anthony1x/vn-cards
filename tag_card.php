@@ -13,12 +13,12 @@ if (in_array('--stop', $argv)) {
 }
 
 if (is_null($tag_to_add)) {
-    al_log("No option specified: Need --start or --stop");
+    anki_log("No option specified: Need --start or --stop", Urgency::normal);
 }
 
 $last_note = get_latest_card();
 
 add_tags_to_card($last_note, $tag_to_add);
 
-$expr = anki_connect('notesInfo', ['notes' => [$last_note]])->result[0]->fields->Expression->value;
-al_log("Added $tag_to_add to card: $expr");
+$expr = anki_connect('notesInfo', ['notes' => [$last_note]])->result[0]->fields->{FRONT_FIELD}->value;
+anki_log("Added $tag_to_add to card: $expr");

@@ -9,7 +9,7 @@ if pgrep pw-record; then
     # Stop recording audio
     pkill pw-record
 
-    dunstify "Recording finished" -r 6969
+    notify-send -u low -a ankivn -r 6969 "Recording finished"
 
     # Add to anki card using php script
     php $php_script
@@ -20,7 +20,8 @@ else
     # Take screenshot and size it down while we're at it
     scrot -a 1280,1440,2560,1440 - | magick - -resize x600 $screenshot
 
-    dunstify "Recording..." -r 6969
+    # -t 0 Makes it so the notification never disappears.
+    notify-send -u low -a ankivn -r 6969 "Recording..." -t 0
 
     # -P sets properties. We set the `sink` property to true to record all desktop audio.
     # It would probably be better to just record the audio of the window we actually want to record,
