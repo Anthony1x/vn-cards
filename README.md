@@ -20,11 +20,9 @@ Things you may need to adjust to fit your own needs:
 * Scrot's screen position and resolution
 * Consts defined at the top of the `anki_connect.php` file
 
-Adjust the scripts to fit your needs (i.e. screen position and resolution) as they are made to specifically fit my use cases as-is.
+I only really wrote this script for myself, so it's not tested to work on a plethora of systems.
 
-As you can maybe tell, I didn't write the script with public use exactly in mind.
-
-Maybe I will make it more generic in the future, but, you know, it works ¯\\\_(ツ)_/¯
+Still, feel free to open an issue if something doesn't work the way you expect.
 
 ## Credit
 Some code taken from [RecordAudioOutput](https://github.com/JayXT/RecordAudioOutput) and anacreons [animecards mpv script](https://anacreondjt.gitlab.io/docs/mpvscript/)
