@@ -1,6 +1,8 @@
 <?php
 
-// Tags
+/// Tags
+
+declare(strict_types=1);
 
 require_once 'anki_connect.php';
 

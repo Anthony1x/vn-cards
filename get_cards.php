@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once 'anki_connect.php';
 
 $res = anki_connect('findCards', ['query' => 'deck:current'])->result;

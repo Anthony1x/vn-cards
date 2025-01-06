@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 require_once 'anki_connect.php';
 
 $do_not_record = false;

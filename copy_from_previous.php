@@ -3,6 +3,8 @@
 /// Copy audio and picture info from the card immediately before the current one.
 /// This prevents polluting Anki with multiple copies of the same audio / picture.
 
+declare(strict_types=1);
+
 require_once 'anki_connect.php';
 
 $all_cards = get_all_cards();

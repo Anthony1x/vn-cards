@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 const DECK_NAME = 'deck:日本語::Mining';
 
 const FRONT_FIELD = "Expression";
