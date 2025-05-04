@@ -21,7 +21,8 @@ else
     scrot -a 1280,1440,2560,1440 - | magick - -resize x600 $screenshot
 
     # -t 0 Makes it so the notification never disappears.
-    notify-send -u low -a ankivn -r 6969 "Recording..." -t 0
+    # NOTE: This broke at some point for unknown reasons. So we just set the timeout ridiculously high
+    notify-send -u low -a ankivn -r 6969 "Recording..." -t 99999
 
     # -P sets properties. We set the `sink` property to true to record all desktop audio.
     # It would probably be better to just record the audio of the window we actually want to record,

@@ -5,12 +5,18 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Listen for Xdebug",
+            "type": "php",
+            "request": "launch",
+            "port": 9003
+        },
+        {
             "name": "Launch currently open script",
             "type": "php",
             "request": "launch",
-            "program": "${cwd}/add_to_card.php",
+            "program": "${cwd}/get_cards.php",
             "cwd": "${fileDirname}",
-            "port": 0,
+            "port": 9003,
             "args": [
                 "--do-not-record",
                 "--test-env"

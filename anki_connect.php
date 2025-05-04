@@ -79,8 +79,15 @@ function add_tags_to_card($card, string ...$tags)
 function get_all_cards(string $deck = DECK_NAME)
 {
     $note_ids = anki_connect('findCards', ['query' => $deck])->result;
-
     $note_info = anki_connect('cardsInfo', ['cards' => $note_ids])->result;
+
+    return array_filter((array)$note_info, fn($note) => !empty((array)$note));
+}
+
+function get_all_notes(string $deck = DECK_NAME)
+{
+    $res = anki_connect('findCards', ['query' => $deck])->result;
+    $note_info = anki_connect('notesInfo', ['notes' => $res])->result;
 
     return array_filter((array)$note_info, fn($note) => !empty((array)$note));
 }
@@ -93,41 +100,32 @@ function anki_log(string $message, Urgency $loglevel = Urgency::low)
 
 function get_cards_by_tag()
 {
-    $res = anki_connect('findCards', ['query' => DECK_NAME])->result;
+    $note_info = get_all_notes();
 
-    $note_info = anki_connect('notesInfo', ['notes' => $res])->result;
-
-    $note_info = array_filter((array)$note_info, fn($note) => !empty((array)$note));
-
-    $tagCounts = [];
+    $tag_counts = [];
 
     foreach ($note_info as $note) {
-        // Make sure that $note->tags exists and it's an array.
-        if (isset($note->tags) && is_array($note->tags)) {
-            foreach ($note->tags as $tag) {
-                // Remove (or convert) wildcards if necessary. Otherwise, count directly.
-                if (!isset($tagCounts[$tag])) {
-                    $tagCounts[$tag] = 1;
-                } else {
-                    $tagCounts[$tag]++;
-                }
+        foreach ($note->tags as $tag) {
+            // Remove (or convert) wildcards if necessary. Otherwise, count directly.
+            if (!isset($tag_counts[$tag])) {
+                $tag_counts[$tag] = 1;
+            } else {
+                $tag_counts[$tag]++;
             }
         }
     }
 
-    arsort($tagCounts);
+    arsort($tag_counts);
 
-    return $tagCounts;
+    return $tag_counts;
 }
 
 function get_sorted_by_freq_or_age()
 {
-    $res = anki_connect('findCards', ['query' => DECK_NAME . '  is:new',])->result;
+    $cards = get_all_cards();
 
-    $note_info = anki_connect('notesInfo', ['notes' => $res])->result;
-
-    $note_info = array_filter((array)$note_info, fn($note) => !empty((array)$note));
-    $note_info = array_values($note_info);
+    $cards = array_filter((array)$cards, fn($note) => !empty((array)$note));
+    $cards = array_values($cards);
 
     $typed = array_map(function ($note) {
         $f = $note->fields;
@@ -163,13 +161,81 @@ function get_sorted_by_freq_or_age()
             mod: $note->mod,
             cards: $note->cards
         );
-    }, $note_info);
+    }, $cards);
 
     $freq = $typed;
     $oldest = $typed;
 
     usort($freq, fn($note1, $note2) => $note1->fields->freqSort->value <=> $note2->fields->freqSort->value);
     usort($oldest, fn($note1, $note2) => $note1->noteId <=> $note2->noteId);
+}
+
+function replace_with_newer_card()
+{
+    $cards = get_all_cards();
+
+    $cardsByField = [];
+
+    foreach ($cards as $card) {
+        $key = $card->fields->{FRONT_FIELD}->value;
+
+        if (!isset($cardsByField[$key])) {
+            $cardsByField[$key] = [];
+        }
+
+        $cardsByField[$key][] = $card;
+    }
+
+    // Filter out keys that have only one card so that you're left with duplicates only
+    $duplicates = [];
+    foreach ($cardsByField as $key => $group) {
+        if (count($group) > 1) {
+            $duplicates[$key] = $group;
+        }
+    }
+
+    foreach ($duplicates as $duplicate) {
+
+        usort($duplicate, fn($note1, $note2) => $note1->cardId <=> $note2->cardId);
+
+        $old = $duplicate[0];
+        $new = $duplicate[1];
+
+        $f = $new->fields;
+
+        $res = anki_connect('updateNoteFields', [
+            'note' => [
+                'id' => $old->note,
+                'fields' => [
+                    "ExpressionFurigana" => $f->ExpressionFurigana->value,
+                    "ExpressionReading" => $f->ExpressionReading->value,
+                    "ExpressionAudio" => $f->ExpressionAudio->value,
+                    'SelectionText' => $f->SelectionText->value,
+                    'MainDefinition' => $f->MainDefinition->value,
+                    'Sentence' => $f->Sentence->value,
+                    'SentenceFurigana' => $f->SentenceFurigana->value,
+                    'SentenceAudio' => $f->SentenceAudio->value,
+                    'Picture' => $f->Picture->value,
+                    'Glossary' => $f->Glossary->value,
+                    'Hint' => $f->Hint->value,
+                    'IsWordAndSentenceCard' => $f->IsWordAndSentenceCard->value,
+                    'IsClickCard' => $f->IsClickCard->value,
+                    'IsSentenceCard' => $f->IsSentenceCard->value,
+                    'PitchPosition' => $f->PitchPosition->value,
+                    'PitchCategories' => $f->PitchCategories->value,
+                    'Frequency' => $f->Frequency->value,
+                    'FreqSort' => $f->FreqSort->value,
+                    'MiscInfo' => $f->MiscInfo->value,
+                ]
+            ]
+        ]);
+
+        $res2 = anki_connect('deleteNotes', [
+            'notes' => [$new->note]
+        ]);
+
+        var_dump("Done. Output:", $res, $res2);
+    }
 }
 
 enum Urgency: string
