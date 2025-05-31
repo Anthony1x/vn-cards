@@ -203,6 +203,11 @@ function replace_with_newer_card()
 
         $f = $new->fields;
 
+        if ($old->fields->ExpressionReading->value != $f->ExpressionReading->value) {
+            var_dump("Difference detected!", $old->fields->Expression->value, $old->fields->ExpressionReading->value, $f->ExpressionReading->value);
+            continue;
+        }
+
         $res = anki_connect('updateNoteFields', [
             'note' => [
                 'id' => $old->note,
@@ -234,7 +239,7 @@ function replace_with_newer_card()
             'notes' => [$new->note]
         ]);
 
-        var_dump("Done. Output:", $res, $res2);
+        var_dump("Done. Output: ", $res, $res2);
     }
 }
 
