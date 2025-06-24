@@ -12,7 +12,7 @@ const IMAGE_FIELD = "Picture";
 const START_HERE = 'start_collecting';
 const STOP_HERE = 'stop_collecting';
 
-// Anki collection media path. Ensure Anki username is correct.
+/** Anki collection media path. Ensure Anki username is correct. */
 define('PREFIX', getenv("HOME") . "/.local/share/Anki2/User 1/collection.media");
 
 function anki_connect(string $action, array $params)
