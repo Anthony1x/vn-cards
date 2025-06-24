@@ -204,7 +204,7 @@ function replace_with_newer_card()
         $f = $new->fields;
 
         if ($old->fields->ExpressionReading->value != $f->ExpressionReading->value) {
-            var_dump("Difference detected!", $old->fields->Expression->value, $old->fields->ExpressionReading->value, $f->ExpressionReading->value);
+            var_dump("Difference detected!", $old->fields->{FRONT_FIELD}->value, $old->fields->ExpressionReading->value, $f->ExpressionReading->value);
             continue;
         }
 
