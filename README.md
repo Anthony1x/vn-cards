@@ -1,6 +1,12 @@
 # vn-cards
 Linux tool to mine anki cards, specifically made for visual novels, but can be used to mine anything.
 
+Over time, this has grown to be a general purpose anki tool that can do all sorts of stuff.
+
+IMPORTANT: This tool is currently optimised for use with the Lapis Note Type.
+If you use anything else, things will break, and you *will* need to dig through the code
+to replace field names.
+
 ## How to use:
 Ideally, use [this](https://github.com/Anthony1x/.dotfiles/blob/main/.config/rofi/scripts/anki.sh) rofi script
 
