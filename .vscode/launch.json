@@ -5,16 +5,10 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Listen for Xdebug",
+            "name": "Launch get_cards.php",
             "type": "php",
             "request": "launch",
-            "port": 9003
-        },
-        {
-            "name": "Launch currently open script",
-            "type": "php",
-            "request": "launch",
-            "program": "${cwd}/get_cards.php",
+            "program": "${workspaceFolder}/get_cards.php",
             "cwd": "${fileDirname}",
             "port": 9003,
             "args": [

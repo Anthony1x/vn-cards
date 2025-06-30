@@ -127,44 +127,8 @@ function get_sorted_by_freq_or_age()
     $cards = array_filter((array)$cards, fn($note) => !empty((array)$note));
     $cards = array_values($cards);
 
-    $typed = array_map(function ($note) {
-        $f = $note->fields;
-        $fields = new LapisFields(
-            expression: new ValueOrderPair($f->Expression->value),
-            expressionFurigana: new ValueOrderPair($f->ExpressionFurigana->value),
-            expressionReading: new ValueOrderPair($f->ExpressionReading->value),
-            expressionAudio: new ValueOrderPair($f->ExpressionAudio->value),
-            selectionText: new ValueOrderPair($f->SelectionText->value),
-            mainDefinition: new ValueOrderPair($f->MainDefinition->value),
-            sentence: new ValueOrderPair($f->Sentence->value),
-            sentenceFurigana: new ValueOrderPair($f->SentenceFurigana->value),
-            sentenceAudio: new ValueOrderPair($f->SentenceAudio->value),
-            picture: new ValueOrderPair($f->Picture->value),
-            glossary: new ValueOrderPair($f->Glossary->value),
-            hint: new ValueOrderPair($f->Hint->value),
-            isWordAndSentenceCard: new ValueOrderPair($f->IsWordAndSentenceCard->value),
-            isClickCard: new ValueOrderPair($f->IsClickCard->value),
-            isSentenceCard: new ValueOrderPair($f->IsSentenceCard->value),
-            pitchPosition: new ValueOrderPair($f->PitchPosition->value),
-            pitchCategories: new ValueOrderPair($f->PitchCategories->value),
-            frequency: new ValueOrderPair($f->Frequency->value),
-            freqSort: new ValueOrderPair($f->FreqSort->value),
-            miscInfo: new ValueOrderPair($f->MiscInfo->value)
-        );
-
-        return new LapisNote(
-            noteId: $note->noteId,
-            profile: $note->profile,
-            tags: $note->tags,
-            fields: $fields,
-            modelName: $note->modelName,
-            mod: $note->mod,
-            cards: $note->cards
-        );
-    }, $cards);
-
-    $freq = $typed;
-    $oldest = $typed;
+    $freq = $cards;
+    $oldest = $cards;
 
     usort($freq, fn($note1, $note2) => $note1->fields->freqSort->value <=> $note2->fields->freqSort->value);
     usort($oldest, fn($note1, $note2) => $note1->noteId <=> $note2->noteId);
@@ -248,40 +212,4 @@ enum Urgency: string
     case low = 'low';
     case normal = 'normal';
     case critical = 'critical';
-}
-
-class ValueOrderPair
-{
-    public function __construct(public string $value, public int $order = 0) {}
-}
-
-class LapisFields
-{
-    public function __construct(
-        public ValueOrderPair $expression,
-        public ValueOrderPair $expressionFurigana,
-        public ValueOrderPair $expressionReading,
-        public ValueOrderPair $expressionAudio,
-        public ValueOrderPair $selectionText,
-        public ValueOrderPair $mainDefinition,
-        public ValueOrderPair $sentence,
-        public ValueOrderPair $sentenceFurigana,
-        public ValueOrderPair $sentenceAudio,
-        public ValueOrderPair $picture,
-        public ValueOrderPair $glossary,
-        public ValueOrderPair $hint,
-        public ValueOrderPair $isWordAndSentenceCard,
-        public ValueOrderPair $isClickCard,
-        public ValueOrderPair $isSentenceCard,
-        public ValueOrderPair $pitchPosition,
-        public ValueOrderPair $pitchCategories,
-        public ValueOrderPair $frequency,
-        public ValueOrderPair $freqSort,
-        public ValueOrderPair $miscInfo,
-    ) {}
-}
-
-class LapisNote
-{
-    public function __construct(public int $noteId, public ?string $profile = "User 1", public array $tags, public LapisFields $fields, public ?string $modelName = "Lapis", public int $mod, public array $cards) {}
 }
