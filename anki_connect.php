@@ -199,6 +199,8 @@ function replace_with_newer_card()
             ]
         ]);
 
+        add_tags_to_card($old->note, "Retag");
+
         $res2 = anki_connect('deleteNotes', [
             'notes' => [$new->note]
         ]);
