@@ -71,12 +71,12 @@ if ($test_env === true) {
 
 $stamp = time();
 
-$image_tmp = "/home/anthony/Documents/tmp/ankiscreenie.webp";
+$image_tmp = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'ankiscreenie.webp';
 $image = "anthony_custom_$stamp.webp";
 copy($image_tmp,  PREFIX . "/$image");
 
 if ($do_not_record === false) {
-    $audio_tmp = "/home/anthony/Documents/tmp/ankirecording.wav";
+    $audio_tmp = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'ankirecording.wav';
     $audio = "anthony_custom_$stamp.wav";
     copy($audio_tmp, PREFIX . "/$audio");
 }
