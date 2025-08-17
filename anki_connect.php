@@ -98,26 +98,62 @@ function anki_log(string $message, Urgency $loglevel = Urgency::low)
     shell_exec("notify-send -a ankivn -r 6969 -u {$loglevel->name} -t 5000 '$message'");
 }
 
-function get_cards_by_tag()
+function get_cards_by_tag(bool $with_frequency = false)
 {
     $note_info = get_all_notes();
 
-    $tag_counts = [];
+    if ($with_frequency) {
+        $tag_data = [];
+        foreach ($note_info as $note) {
+            // Ensure the FreqSort field exists and has a numeric value. Default to 0 if not.
+            $freq_value = (int)($note->fields->FreqSort->value ?? 0);
 
-    foreach ($note_info as $note) {
-        foreach ($note->tags as $tag) {
-            // Remove (or convert) wildcards if necessary. Otherwise, count directly.
-            if (!isset($tag_counts[$tag])) {
-                $tag_counts[$tag] = 1;
-            } else {
-                $tag_counts[$tag]++;
+            // If the frequency is the default placeholder, skip this card for stats.
+            if ($freq_value === 9999999) {
+                continue; // Move to the next note in the loop
+            }
+
+            foreach ($note->tags as $tag) {
+                if (!isset($tag_data[$tag])) {
+                    // Initialize with structure for count and total frequency
+                    $tag_data[$tag] = ['Count' => 0, 'TotalFreq' => 0];
+                }
+                $tag_data[$tag]['Count']++;
+                $tag_data[$tag]['TotalFreq'] += $freq_value;
             }
         }
+
+        // Calculate the average frequency for each tag
+        foreach ($tag_data as $tag => &$data) {
+            if ($data['Count'] > 0) {
+                $data['Freq'] = number_format($data['TotalFreq'] / $data['Count'],0);
+            } else {
+                $data['Freq'] = 0;
+            }
+            // Remove the temporary total frequency key
+            unset($data['TotalFreq']);
+        }
+
+        // Sort the array by 'Count' in descending order, maintaining key association
+        uasort($tag_data, fn($a, $b) => $b['Count'] <=> $a['Count']);
+
+        return $tag_data;
+
+    } else {
+        // Original functionality for when $with_frequency is false
+        $tag_counts = [];
+        foreach ($note_info as $note) {
+            foreach ($note->tags as $tag) {
+                if (!isset($tag_counts[$tag])) {
+                    $tag_counts[$tag] = 1;
+                } else {
+                    $tag_counts[$tag]++;
+                }
+            }
+        }
+        arsort($tag_counts);
+        return $tag_counts;
     }
-
-    arsort($tag_counts);
-
-    return $tag_counts;
 }
 
 function get_sorted_by_freq_or_age()
