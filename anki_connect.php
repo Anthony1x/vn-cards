@@ -83,12 +83,6 @@ function get_all_notes(string $deck = DECK_NAME)
     return array_filter((array)$note_info, fn($note) => !empty((array)$note));
 }
 
-function anki_log(string $message, Urgency $loglevel = Urgency::low)
-{
-    // See `man notify-send` if you want to know what all these do.
-    shell_exec("notify-send -a ankivn -r 6969 -u {$loglevel->name} -t 5000 '$message'");
-}
-
 function get_cards_by_tag(bool $with_frequency = false)
 {
     $note_info = get_all_notes();
@@ -227,9 +221,3 @@ function replace_with_newer_card(string $deck = DECK_NAME)
     }
 }
 
-enum Urgency: string
-{
-    case low = 'low';
-    case normal = 'normal';
-    case critical = 'critical';
-}

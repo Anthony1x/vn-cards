@@ -1,5 +1,19 @@
 <?php
 
+enum Urgency: string
+{
+    case low = 'low';
+    case normal = 'normal';
+    case critical = 'critical';
+}
+
+function anki_log(string $message, Urgency $loglevel = Urgency::low)
+{
+    // See `man notify-send` if you want to know what all these do.
+    shell_exec("notify-send -a ankivn -r 6969 -u {$loglevel->name} -t 5000 '$message'");
+}
+
+
 function define_keys()
 {
     $env = parse_ini_file('.env');
