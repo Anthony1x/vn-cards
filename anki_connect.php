@@ -2,15 +2,9 @@
 
 declare(strict_types=1);
 
-const DECK_NAME = 'deck:日本語::Mining';
+require_once('helper.php');
 
-const FRONT_FIELD = "Expression";
-const SENTENCE_AUDIO_FIELD = "SentenceAudio";
-const SENTENCE_FIELD = "Sentence";
-const IMAGE_FIELD = "Picture";
-
-/** Anki collection media path. Ensure Anki username is correct. */
-define('PREFIX', getenv("HOME") . "/.local/share/Anki2/User 1/collection.media");
+define_keys();
 
 function anki_connect(string $action, array $params)
 {
@@ -123,7 +117,7 @@ function get_cards_by_tag(bool $with_frequency = false)
         // Calculate the average frequency for each tag
         foreach ($tag_data as $tag => &$data) {
             if ($data['Count'] > 0) {
-                $data['Freq'] = number_format($data['TotalFreq'] / $data['Count'],0);
+                $data['Freq'] = number_format($data['TotalFreq'] / $data['Count'], 0);
             } else {
                 $data['Freq'] = 0;
             }
@@ -135,7 +129,6 @@ function get_cards_by_tag(bool $with_frequency = false)
         uasort($tag_data, fn($a, $b) => $b['Count'] <=> $a['Count']);
 
         return $tag_data;
-
     } else {
         // Original functionality for when $with_frequency is false
         $tag_counts = [];
