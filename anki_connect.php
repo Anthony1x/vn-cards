@@ -153,9 +153,15 @@ function get_cards_by_tag(bool $with_frequency = false)
     }
 }
 
-function replace_with_newer_card()
+/**
+ * Go through all cards in the deck. If the card with the same Expression exists multiple times, replace the contents
+ * of the older card with the contents of the newer card.
+ *
+ * This is to update existing words whilst keeping the cards' review history in tact.
+ */
+function replace_with_newer_card(string $deck = DECK_NAME)
 {
-    $cards = get_all_cards();
+    $cards = get_all_cards($deck);
 
     $cardsByField = [];
 
