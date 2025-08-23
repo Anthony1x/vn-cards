@@ -9,18 +9,27 @@
 #
 #==============================================================================
 
+# --- Load Environment Variables ---
+script_dir=$(dirname "$0")
+env_file="$script_dir/.env"
+
+if [ -f "$env_file" ]; then
+  source "$env_file"
+else
+    notify-send -u critical -a ankivn -r 6969 "Error: .env file not found at $env_file - consult the example .env"
+  exit 1
+fi
+
 # --- Configuration ---
 screenshot="/tmp/ankiscreenie.webp"
 audio="/tmp/ankirecording.wav"
-php_script="$(xdg-user-dir DOCUMENTS)/Dev/vn-cards/add_to_card.php"
-
 
 # --- Helper Function ---
 # Takes a screenshot of a predefined area, creates a thumbnail,
 # and replaces the original with the thumbnail.
 take_screenshot() {
     # -a selects an area, -t creates a thumbnail of the given size (0x600)
-    scrot -a 1280,1440,2560,1440 "$screenshot" -t 0x600
+    scrot -a $SCROT_POSITION "$screenshot" -t 0x600
 
     # Remove the original, full-resolution screenshot
     rm "$screenshot"
@@ -52,10 +61,6 @@ if [ "$1" = "-r" ] || [ "$1" = "--record" ]; then
         # --- Start Recording ---
         take_screenshot
         notify-send -u low -a ankivn -r 6969 "Recording..." -t 99999
-
-        # A brief pause and mouse action, specific to your workflow
-        sleep 0.2
-        xdotool mousemove 3670 2650 click 1
 
         # Start recording all desktop audio
         pw-record -P '{ stream.capture.sink=true }' "$audio"

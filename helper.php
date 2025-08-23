@@ -28,6 +28,7 @@ function define_keys()
     ];
 
     if (array_any($consts, fn($const) => !$const)) {
-        throw new Exception("At least one necessary key is missing! Consult the example .env");
+        anki_log("At least one necessary key is missing! Consult the example .env, aborting.", Urgency::critical);
+        throw new Exception();
     }
 }

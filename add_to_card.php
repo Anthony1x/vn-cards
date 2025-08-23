@@ -59,11 +59,6 @@ function add_to_last_added(string $image, ?string $audio = null, ?string $text =
     anki_log("Successfully added to word: $word");
 }
 
-function get_clipboard()
-{
-    return shell_exec('xclip -selection clipboard -out');
-}
-
 if ($test_env === true) {
     add_to_last_added('', '', '');
     return;

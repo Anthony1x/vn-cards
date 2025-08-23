@@ -33,10 +33,6 @@ I only really wrote this script for myself, so it's not tested to work on a plet
 
 Still, feel free to open an issue if something doesn't work the way you expect.
 
-## Potential points for improvment
-* .env file to define anki fields and scrot screen position
-* Clean up repo. Some functionality is a bit dead
-
 ## Credit
 Some code taken from [RecordAudioOutput](https://github.com/JayXT/RecordAudioOutput) and anacreons [animecards mpv script](https://anacreondjt.gitlab.io/docs/mpvscript/)
 
