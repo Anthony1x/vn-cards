@@ -8,7 +8,7 @@ Over time, this has grown to be a general purpose anki tool that can do all sort
 > If you use anything else, things will break, and you *will* need to dig through the code to replace field names.
 
 ## How to use:
-Simply execute the `take_screenshot.sh` or `record_audio.sh` scripts after creating a card.
+Simply execute the `capture.sh [OPTION]` after creating a card.
 
 You could also use [this](https://github.com/Anthony1x/.dotfiles/blob/main/.config/rofi/scripts/anki.sh) rofi script.
 
@@ -35,8 +35,6 @@ Still, feel free to open an issue if something doesn't work the way you expect.
 
 ## Potential points for improvment
 * .env file to define anki fields and scrot screen position
-* Unify scripts maybe?
-* Replace scrot with [maim](https://github.com/naelstrof/maim)?
 * Clean up repo. Some functionality is a bit dead
 
 ## Credit
