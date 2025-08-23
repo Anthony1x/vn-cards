@@ -153,20 +153,6 @@ function get_cards_by_tag(bool $with_frequency = false)
     }
 }
 
-function get_sorted_by_freq_or_age()
-{
-    $cards = get_all_cards();
-
-    $cards = array_filter((array)$cards, fn($note) => !empty((array)$note));
-    $cards = array_values($cards);
-
-    $freq = $cards;
-    $oldest = $cards;
-
-    usort($freq, fn($note1, $note2) => $note1->fields->freqSort->value <=> $note2->fields->freqSort->value);
-    usort($oldest, fn($note1, $note2) => $note1->noteId <=> $note2->noteId);
-}
-
 function replace_with_newer_card()
 {
     $cards = get_all_cards();
