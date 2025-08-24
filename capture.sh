@@ -53,7 +53,7 @@ if [ "$1" = "-r" ] || [ "$1" = "--record" ]; then
         notify-send -u low -a ankivn -r 6969 "Recording finished"
 
         # Process the captured screenshot and audio
-        php "$php_script"
+        php "$PHP_SCRIPT"
 
         # Clean up temporary files
         rm "$screenshot" "$audio"
@@ -61,6 +61,10 @@ if [ "$1" = "-r" ] || [ "$1" = "--record" ]; then
         # --- Start Recording ---
         take_screenshot
         notify-send -u low -a ankivn -r 6969 "Recording..." -t 99999
+
+        # A brief pause and mouse action, specific to your workflow
+        sleep 0.2
+        xdotool mousemove 3670 2650 click 1
 
         # Start recording all desktop audio
         pw-record -P '{ stream.capture.sink=true }' "$audio"
@@ -75,7 +79,7 @@ else
     notify-send -u low -a ankivn -r 6969 "Took screenie"
 
     # Process the screenshot without audio
-    php "$php_script" --do-not-record
+    php "$PHP_SCRIPT" --do-not-record
 
     # Clean up the screenshot
     rm "$screenshot"
