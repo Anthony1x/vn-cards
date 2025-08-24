@@ -68,6 +68,7 @@ $stamp = time();
 
 $image_tmp = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'ankiscreenie.webp';
 $image = "anthony_custom_$stamp.webp";
+
 copy($image_tmp,  PREFIX . "/$image");
 
 if ($do_not_record === false) {

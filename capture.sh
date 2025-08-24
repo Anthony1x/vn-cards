@@ -4,8 +4,8 @@
 # Unified script to capture a screenshot and optionally record audio for an Anki card.
 #
 # USAGE:
-#   - Screenshot only: ./capture_card.sh
-#   - Toggle audio recording: ./capture_card.sh --record
+#   - Screenshot only: ./capture.sh
+#   - Toggle audio recording: ./capture.sh --record
 #
 #==============================================================================
 
