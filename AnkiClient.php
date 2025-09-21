@@ -14,7 +14,7 @@ class AnkiClient
         return self::$instance;
     }
 
-    function anki_connect(string $action, array $params)
+    public function anki_connect(string $action, array $params)
     {
         $curl = curl_init();
 
@@ -50,7 +50,7 @@ class AnkiClient
         return json_decode($response);
     }
 
-    function get_latest_card()
+    public function get_latest_card()
     {
         $last_note = self::anki_connect('findNotes',  ['query' => 'added:1'])->result;
 
@@ -65,7 +65,7 @@ class AnkiClient
         return $last_note;
     }
 
-    function add_tags_to_card($card, string ...$tags)
+    public function add_tags_to_card($card, string ...$tags)
     {
         return self::anki_connect('updateNote', [
             'note' => [
@@ -75,7 +75,7 @@ class AnkiClient
         ]);
     }
 
-    function get_all_cards()
+    public function get_all_cards()
     {
         $note_ids = self::anki_connect('findCards', ['query' => DECK_NAME])->result;
         $note_info = self::anki_connect('cardsInfo', ['cards' => $note_ids])->result;
@@ -83,7 +83,7 @@ class AnkiClient
         return array_filter((array)$note_info, fn($note) => !empty((array)$note));
     }
 
-    function get_all_notes()
+    public function get_all_notes()
     {
         $res = self::anki_connect('findCards', ['query' => DECK_NAME])->result;
         $note_info = self::anki_connect('notesInfo', ['notes' => $res])->result;
@@ -91,7 +91,13 @@ class AnkiClient
         return array_filter((array)$note_info, fn($note) => !empty((array)$note));
     }
 
-    function get_cards_by_tag(bool $with_frequency = false)
+
+    /**
+     *
+     * @param bool $with_frequency
+     * @return ($with_frequency is false ? array<string, int> : array<string, array{Count: int, Freq: int}>)
+     */
+    public function get_cards_by_tag(bool $with_frequency = false)
     {
         $note_info = self::get_all_notes();
 
@@ -239,7 +245,7 @@ class AnkiClient
         }
     }
 
-    function add_to_last_added(string $image, ?string $audio = null)
+    public function add_to_last_added(string $image, ?string $audio = null)
     {
         $last_note = self::get_latest_card();
         $note_info = self::anki_connect('notesInfo', ['notes' => [$last_note]]);
@@ -274,5 +280,36 @@ class AnkiClient
         ]);
 
         anki_log("Successfully added to word: $word");
+    }
+
+    public function get_cards_with_frequency()
+    {
+        $displayWidth = function (string $string) {
+            $width = 0;
+            for ($i = 0; $i < mb_strlen($string, 'UTF-8'); $i++) {
+                $char = mb_substr($string, $i, 1, 'UTF-8');
+                // Check for double-width characters (Hiragana, Katakana, and Kanji)
+                if (preg_match('/[ぁ-んァ-ヶ一-龯]/u', $char)) {
+                    $width += 2;
+                } else {
+                    $width += 1;
+                }
+            }
+            return $width;
+        };
+
+        $cards = $this->get_cards_by_tag(with_frequency: true);
+
+        $max_display_width = 0;
+        foreach (array_keys($cards) as $key) {
+            $max_display_width = max($max_display_width, $displayWidth($key));
+        }
+
+        foreach ($cards as $key => $value) {
+            $current_display_width = $displayWidth($key);
+            $padding_length = $max_display_width - $current_display_width;
+            $padding = str_repeat(' ', $padding_length);
+            echo $key . $padding . " |\t{$value['Count']}\t| {$value['Freq']}\n";
+        }
     }
 }
