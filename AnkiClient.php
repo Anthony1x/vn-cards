@@ -160,49 +160,54 @@ class AnkiClient
      *
      * This is to update existing words whilst keeping the cards' review history in tact.
      */
-    function replace_with_newer_card()
+    function replace_with_newer_card(int $days = 1)
     {
-        $cards = self::get_all_cards();
+        $recent_note_ids = self::anki_connect('findNotes', ['query' => DECK_NAME . ' added:' . $days])->result;
 
-        $cardsByField = [];
-
-        foreach ($cards as $card) {
-            $key = $card->fields->{FRONT_FIELD}->value;
-
-            if (!isset($cardsByField[$key])) {
-                $cardsByField[$key] = [];
-            }
-
-            $cardsByField[$key][] = $card;
+        if (empty($recent_note_ids)) {
+            echo "No recently added notes to check for duplicates.\n";
+            return;
         }
 
-        // Filter out keys that have only one card so that you're left with duplicates only
-        $duplicates = [];
-        foreach ($cardsByField as $key => $group) {
-            if (count($group) > 1) {
-                $duplicates[$key] = $group;
-            }
-        }
+        // 2. Get the info for ONLY these recent notes.
+        foreach (self::anki_connect('notesInfo', ['notes' => $recent_note_ids])->result as $recent_note) {
 
-        foreach ($duplicates as $duplicate) {
+            $key_field_value = $recent_note->fields->{FRONT_FIELD}->value;
 
-            usort($duplicate, fn($note1, $note2) => $note1->cardId <=> $note2->cardId);
+            $safe_key_value = addslashes($key_field_value);
 
-            $old = $duplicate[0];
-            $new = $duplicate[1];
+            // 3. For each recent note, ask Anki to find ALL notes (old and new) with the same front field.
+            $duplicate_note_ids = self::anki_connect('findNotes', ['query' => DECK_NAME . ' ' . FRONT_FIELD . ':' . $safe_key_value])->result;
+
+            // 4. If Anki finds more than one note, we have a duplicate group to process.
+            if (count($duplicate_note_ids) < 2)
+                continue;
+
+            echo "Duplicate found for: '{$safe_key_value}'\n";
+
+            $duplicate_group_info = self::anki_connect('notesInfo', ['notes' => $duplicate_note_ids])->result;
+
+            // Sort the group by note ID (older notes have smaller IDs).
+            usort($duplicate_group_info, fn($a, $b) => $a->noteId <=> $b->noteId);
+
+            $old = $duplicate_group_info[0];
+            $new = end($duplicate_group_info);
 
             $f = $new->fields;
 
             if ($old->fields->ExpressionReading->value != $f->ExpressionReading->value) {
-                echo "Difference detected! Expression: " . $old->fields->{FRONT_FIELD}->value .
-                    "\t| Reading 1: " . $old->fields->ExpressionReading->value .
-                    "\t| Reading 2: " . $f->ExpressionReading->value . "\n";
+                echo "  -> Reading difference detected. Expression: " . $old->fields->{FRONT_FIELD}->value .
+                    " | Reading 1: " . $old->fields->ExpressionReading->value .
+                    " | Reading 2: " . $f->ExpressionReading->value . "\n";
+                echo "  -> Skipping merge.\n";
+
                 continue;
             }
 
+            echo "  -> Merging new data into the old card...\n";
             $res = self::anki_connect('updateNoteFields', [
                 'note' => [
-                    'id' => $old->note,
+                    'id' => $old->noteId,
                     'fields' => [
                         "ExpressionFurigana" => $f->ExpressionFurigana->value,
                         "ExpressionReading" => $f->ExpressionReading->value,
@@ -229,20 +234,23 @@ class AnkiClient
 
             if (!is_null($res->error)) {
                 var_dump($res);
-                throw new Exception("There has been an error processing the request.");
+                throw new Exception("Error updating note fields.");
             }
 
-            self::add_tags_to_card($old->note, "Retag");
+            self::add_tags_to_card($old->noteId, "Retag");
 
+            echo "  -> Deleting the newer, redundant note...\n";
             $res = self::anki_connect('deleteNotes', [
-                'notes' => [$new->note]
+                'notes' => [$new->noteId]
             ]);
 
             if (!is_null($res->error)) {
                 var_dump($res);
-                throw new Exception("There has been an error processing the request.");
+                throw new Exception("Error deleting the new note.");
             }
         }
+
+        echo "Duplicate check complete.\n";
     }
 
     public function add_to_last_added(string $image, ?string $audio = null)
