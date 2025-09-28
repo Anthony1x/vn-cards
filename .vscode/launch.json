@@ -10,17 +10,23 @@
             "request": "launch",
             "program": "${workspaceFolder}/get_cards.php",
             "cwd": "${fileDirname}",
-                "runtimeArgs": [
+            "runtimeArgs": [
                 "-dxdebug.start_with_request=yes"
             ],
             "port": 9003,
             "args": [
                 "--do-not-record",
             ],
-                "env": {
+            "env": {
                 "XDEBUG_MODE": "debug,develop",
                 "XDEBUG_CONFIG": "client_port=${port}"
             }
+        },
+        {
+            "name": "Listen for Xdebug",
+            "type": "php",
+            "request": "launch",
+            "port": 9003
         },
     ]
 }
