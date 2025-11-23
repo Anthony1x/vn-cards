@@ -8,4 +8,4 @@ define_keys();
 
 require_once('AnkiClient.php');
 
-$ankiclient = new AnkiClient();
+$ankiclient = AnkiClient::get_instance();

@@ -6,7 +6,7 @@ class AnkiClient
     private const ANKI_PORT = "8765";
     private const ANKI_URL = "http://localhost";
 
-    public static function getInstance(): self
+    public static function get_instance(): self
     {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -39,8 +39,6 @@ class AnkiClient
 
         $response = curl_exec($curl);
         $err = curl_error($curl);
-
-        curl_close($curl);
 
         if ($err) {
             anki_log("cURL reported error: $err, aborting.", Urgency::critical);
@@ -75,17 +73,17 @@ class AnkiClient
         ]);
     }
 
-    public function get_all_cards()
+    public function get_all_cards(string $deck = DECK_NAME)
     {
-        $note_ids = self::anki_connect('findCards', ['query' => DECK_NAME])->result;
+        $note_ids = self::anki_connect('findCards', ['query' => $deck])->result;
         $note_info = self::anki_connect('cardsInfo', ['cards' => $note_ids])->result;
 
         return array_filter((array)$note_info, fn($note) => !empty((array)$note));
     }
 
-    public function get_all_notes()
+    public function get_all_notes(string $deck = DECK_NAME)
     {
-        $res = self::anki_connect('findCards', ['query' => DECK_NAME])->result;
+        $res = self::anki_connect('findCards', ['query' => $deck])->result;
         $note_info = self::anki_connect('notesInfo', ['notes' => $res])->result;
 
         return array_filter((array)$note_info, fn($note) => !empty((array)$note));
@@ -320,4 +318,5 @@ class AnkiClient
             echo $key . $padding . " |\t{$value['Count']}\t| {$value['Freq']}\n";
         }
     }
+
 }
