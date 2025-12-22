@@ -3,17 +3,24 @@
 class AnkiClient
 {
     private static ?self $instance = null;
-    private const ANKI_PORT = "8765";
-    private const ANKI_URL = "http://localhost";
+    private const string ANKI_PORT = "8765";
+    private const string ANKI_URL = "http://localhost";
 
     public static function get_instance(): self
     {
-        if (self::$instance === null) {
+        if (self::$instance === null)
             self::$instance = new self();
-        }
+
         return self::$instance;
     }
 
+    /**
+     * The core of this app. All calls to anki go through this function.
+     *
+     * @param string $action
+     * @param array $params
+     * @return mixed
+     */
     public function anki_connect(string $action, array $params)
     {
         $curl = curl_init();
@@ -89,7 +96,6 @@ class AnkiClient
         return array_filter((array)$note_info, fn($note) => !empty((array)$note));
     }
 
-
     /**
      *
      * @param bool $with_frequency
@@ -102,8 +108,8 @@ class AnkiClient
         if ($with_frequency) {
             $tag_data = [];
             foreach ($note_info as $note) {
-                // Ensure the FreqSort field exists and has a numeric value. Default to 0 if not.
-                $freq_value = (int)($note->fields->FreqSort->value ?? 0);
+                // Ensure the FreqSort field exists and has a numeric value. Default to 9999999 if not.
+                $freq_value = (int)($note->fields->FreqSort->value ?? 9999999);
 
                 // If the frequency is the default placeholder, skip this card for stats.
                 if ($freq_value === 9999999) {
@@ -157,6 +163,8 @@ class AnkiClient
      * of the older card with the contents of the newer card.
      *
      * This is to update existing words whilst keeping the cards' review history in tact.
+     *
+     * @param int $days How many days back to check for cards to replace. Can technically be omitted, but saves tons of time.
      */
     function replace_with_newer_card(int $days = 1)
     {
@@ -318,5 +326,4 @@ class AnkiClient
             echo $key . $padding . " |\t{$value['Count']}\t| {$value['Freq']}\n";
         }
     }
-
 }

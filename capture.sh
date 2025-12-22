@@ -14,10 +14,10 @@ script_dir=$(dirname "$0")
 env_file="$script_dir/.env"
 
 if [ -f "$env_file" ]; then
-  source "$env_file"
+    source "$env_file"
 else
     notify-send -u critical -a ankivn -r 6969 "Error: .env file not found at $env_file - consult the example .env"
-  exit 1
+    exit 1
 fi
 
 # --- Configuration ---
@@ -37,7 +37,6 @@ take_screenshot() {
     # Rename the generated thumbnail to be our main screenshot file
     mv "/tmp/ankiscreenie-thumb.webp" "$screenshot"
 }
-
 
 # --- Main Logic ---
 # Check if the first argument is the record flag
