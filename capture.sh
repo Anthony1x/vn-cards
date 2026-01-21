@@ -21,8 +21,8 @@ else
 fi
 
 # --- Configuration ---
-screenshot="/tmp/ankiscreenie.webp"
-audio="/tmp/ankirecording.wav"
+screenshot="/tmp/ankiscreenie.avif"
+audio="/tmp/ankirecording.opus"
 
 # --- Helper Function ---
 # Takes a screenshot of a predefined area, creates a thumbnail,
@@ -35,7 +35,7 @@ take_screenshot() {
     rm "$screenshot"
 
     # Rename the generated thumbnail to be our main screenshot file
-    mv "/tmp/ankiscreenie-thumb.webp" "$screenshot"
+    mv "/tmp/ankiscreenie-thumb.avif" "$screenshot"
 }
 
 # --- Main Logic ---
@@ -78,7 +78,7 @@ else
     notify-send -u low -a ankivn -r 6969 "Took screenie"
 
     # Process the screenshot without audio
-    php "$PHP_SCRIPT" --do-not-record
+    php "$PHP_SCRIPT"
 
     # Clean up the screenshot
     rm "$screenshot"

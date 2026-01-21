@@ -33,9 +33,7 @@ class AnkiClient
             CURLOPT_CUSTOMREQUEST => "POST",
             CURLOPT_POSTFIELDS => json_encode([
                 'action' => $action,
-                'params' => [
-                    ...$params
-                ],
+                'params' => empty($params) ? (object)[] : $params,
                 'version' => 6
             ]),
             CURLOPT_HTTPHEADER => [

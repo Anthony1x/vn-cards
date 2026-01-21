@@ -4,22 +4,20 @@ declare(strict_types=1);
 
 require_once 'main.php';
 
-$do_not_record = false;
-
-if (in_array('--do-not-record', $argv)) {
-    $do_not_record = true;
-}
 
 $stamp = time();
 
-$image_tmp = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'ankiscreenie.webp';
-$image = "anthony_custom_$stamp.webp";
+$image_tmp = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'ankiscreenie.avif';
 
-copy($image_tmp,  PREFIX . "/$image");
+if (file_exists($image_tmp)) {
+    $image = "anthony_custom_$stamp.avif";
+    copy($image_tmp,  PREFIX . "/$image");
+}
 
-if ($do_not_record === false) {
-    $audio_tmp = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'ankirecording.wav';
-    $audio = "anthony_custom_$stamp.wav";
+$audio_tmp = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'ankirecording.opus';
+
+if (file_exists($audio_tmp)) {
+    $audio = "anthony_custom_$stamp.opus";
     copy($audio_tmp, PREFIX . "/$audio");
 }
 
