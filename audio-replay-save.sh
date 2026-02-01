@@ -2,41 +2,40 @@
 set -euo pipefail
 
 # config - edit if you want
-BUFFER_DIR="/dev/shm/replay"        # where the background ffmpeg writes segments
-SEGMENT_SECONDS=5                   # must match your ffmpeg -segment_time
+BUFFER_DIR="/dev/shm/replay" # where the background ffmpeg writes segments
+SEGMENT_SECONDS=10           # must match your ffmpeg -segment_time
 OUTDIR="/tmp"
-WANTED_SECONDS=20                   # how many seconds to save on keypress
-BITRATE="128k"                       # opus bitrate (small files). Adjust e.g. 96k if you want fuller quality.
+WANTED_SECONDS=30 # how many seconds to save on keypress
+BITRATE="96k"     # opus bitrate (small files). Adjust if you want fuller quality.
 
 # compute how many segments to take (ceiling division)
-SEG_COUNT=$(( (WANTED_SECONDS + SEGMENT_SECONDS - 1) / SEGMENT_SECONDS ))
+SEG_COUNT=$(((WANTED_SECONDS + SEGMENT_SECONDS - 1) / SEGMENT_SECONDS))
 
 # find the last SEG_COUNT segment files in chronological order
-mapfile -t files < <(find "$BUFFER_DIR" -maxdepth 1 -type f -name 'seg*.wav' -printf "%T@ %p\n" \
-  | sort -n | awk '{print $2}' | tail -n "$SEG_COUNT")
+mapfile -t files < <(find "$BUFFER_DIR" -maxdepth 1 -type f -name 'seg*.wav' -printf "%T@ %p\n" |
+    sort -n | awk '{print $2}' | tail -n "$SEG_COUNT")
 
 if [ "${#files[@]}" -eq 0 ]; then
-  notify-send -u low -a ankivn -r 6969 "No buffer files found in $BUFFER_DIR" >&2
-  exit 1
+    notify-send -u low -a ankivn -r 6969 "No buffer files found in $BUFFER_DIR" >&2
+    exit 1
 fi
 
 # build concat list file
 TMPLIST=$(mktemp /dev/shm/replay-concat.XXXX)
 for f in "${files[@]}"; do
-  # guard against spaces/newlines in names
-  printf "file '%s'\n" "$f" >> "$TMPLIST"
+    # guard against spaces/newlines in names
+    printf "file '%s'\n" "$f" >>"$TMPLIST"
 done
 
 # output file with timestamp
-
 
 FILE="ankirecording.opus"
 OUTFILE="$OUTDIR/$FILE"
 
 # concat + transcode to opus in a single ffmpeg call
 ffmpeg -hide_banner -loglevel error -f concat -safe 0 -i "$TMPLIST" \
-  -ss 0 -t "$WANTED_SECONDS" \
-  -c:a libopus -b:a "$BITRATE" -vbr on "$OUTFILE"
+    -ss 0 -t "$WANTED_SECONDS" \
+    -c:a libopus -b:a "$BITRATE" -vbr on "$OUTFILE"
 
 rm -f "$TMPLIST"
 
@@ -56,3 +55,4 @@ mv "$OUTDIR/EDITED_$FILE" "$OUTFILE"
 
 # Finally, we clean up our mess
 rm $OUTFILE
+

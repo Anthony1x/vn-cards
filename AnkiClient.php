@@ -80,16 +80,16 @@ class AnkiClient
 
     public function get_all_cards(string $deck = DECK_NAME)
     {
-        $note_ids = self::anki_connect('findCards', ['query' => $deck])->result;
-        $note_info = self::anki_connect('cardsInfo', ['cards' => $note_ids])->result;
+        $card_ids = self::anki_connect('findCards', ['query' => $deck])->result;
+        $card_info = self::anki_connect('cardsInfo', ['cards' => $card_ids])->result;
 
-        return array_filter((array)$note_info, fn($note) => !empty((array)$note));
+        return array_filter((array)$card_info, fn($card) => !empty((array)$card));
     }
 
     public function get_all_notes(string $deck = DECK_NAME)
     {
-        $res = self::anki_connect('findCards', ['query' => $deck])->result;
-        $note_info = self::anki_connect('notesInfo', ['notes' => $res])->result;
+        $card_ids = self::anki_connect('findCards', ['query' => $deck])->result;
+        $note_info = self::anki_connect('notesInfo', ['notes' => $card_ids])->result;
 
         return array_filter((array)$note_info, fn($note) => !empty((array)$note));
     }
@@ -294,7 +294,7 @@ class AnkiClient
         anki_log("Successfully added to word: $word");
     }
 
-    public function get_cards_with_frequency()
+    public function get_cards_with_frequency(bool $server = false)
     {
         $displayWidth = function (string $string) {
             $width = 0;
@@ -311,6 +311,10 @@ class AnkiClient
         };
 
         $cards = $this->get_cards_by_tag(with_frequency: true);
+
+        if ($server) {
+            return $cards;
+        }
 
         $max_display_width = 0;
         foreach (array_keys($cards) as $key) {
