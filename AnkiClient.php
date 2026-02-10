@@ -88,8 +88,11 @@ class AnkiClient
 
     public function get_all_notes(string $deck = DECK_NAME)
     {
-        $card_ids = self::anki_connect('findCards', ['query' => $deck])->result;
-        $note_info = self::anki_connect('notesInfo', ['notes' => $card_ids])->result;
+        $note_ids = self::anki_connect('findNotes', ['query' => $deck])->result;
+        $note_info = self::anki_connect('notesInfo', ['notes' => $note_ids])->result;
+
+        return array_values(array_filter((array)$note_info, fn($note) => !empty((array)$note)));
+    }
 
         return array_filter((array)$note_info, fn($note) => !empty((array)$note));
     }
