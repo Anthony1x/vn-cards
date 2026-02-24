@@ -309,36 +309,35 @@ class AnkiClient
 
     public function get_cards_with_frequency(bool $server = false)
     {
-        $displayWidth = function (string $string) {
-            $width = 0;
-            for ($i = 0; $i < mb_strlen($string, 'UTF-8'); $i++) {
-                $char = mb_substr($string, $i, 1, 'UTF-8');
-                // Check for double-width characters (Hiragana, Katakana, and Kanji)
-                if (preg_match('/[ぁ-んァ-ヶ一-龯]/u', $char)) {
-                    $width += 2;
-                } else {
-                    $width += 1;
-                }
-            }
-            return $width;
-        };
-
         $cards = $this->get_cards_by_tag(with_frequency: true);
 
         if ($server) {
             return $cards;
         }
 
-        $max_display_width = 0;
-        foreach (array_keys($cards) as $key) {
-            $max_display_width = max($max_display_width, $displayWidth($key));
+        $max_key_width = 0;
+        $max_count_width = 0;
+        $max_freq_width = 0;
+
+        foreach ($cards as $key => $value) {
+            $max_key_width = max($max_key_width, mb_strwidth($key, 'UTF-8'));
+            $max_count_width = max($max_count_width, strlen((string)$value['Count']));
+            $max_freq_width = max($max_freq_width, strlen((string)$value['Freq']));
         }
 
         foreach ($cards as $key => $value) {
-            $current_display_width = $displayWidth($key);
-            $padding_length = $max_display_width - $current_display_width;
-            $padding = str_repeat(' ', $padding_length);
-            echo $key . $padding . " |\t{$value['Count']}\t| {$value['Freq']}\n";
+            $current_key_width = mb_strwidth($key, 'UTF-8');
+            $key_padding = str_repeat(' ', $max_key_width - $current_key_width);
+
+            $count_str = (string)$value['Count'];
+            $count_padding = str_repeat(' ', $max_count_width - strlen($count_str));
+
+            $freq_str = (string)$value['Freq'];
+            $freq_padding = str_repeat(' ', $max_freq_width - strlen($freq_str));
+
+            echo "{$key}{$key_padding} | {$count_padding}{$count_str} | {$freq_padding}{$freq_str}\n";
+        }
+    }
 
     /**
      * Prints all Yojijukugo (four character kanji compounds) in the deck.
