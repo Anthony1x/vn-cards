@@ -6,6 +6,9 @@ class AnkiClient
     private const string ANKI_PORT = "8765";
     private const string ANKI_URL = "http://localhost";
 
+    private array $_cached_notes = [];
+    private array $_cached_cards = [];
+
     public static function get_instance(): self
     {
         if (self::$instance === null)
@@ -80,21 +83,28 @@ class AnkiClient
 
     public function get_all_cards(string $deck = DECK_NAME)
     {
+        if (isset($this->_cached_cards[$deck])) {
+            return $this->_cached_cards[$deck];
+        }
+
         $card_ids = self::anki_connect('findCards', ['query' => $deck])->result;
         $card_info = self::anki_connect('cardsInfo', ['cards' => $card_ids])->result;
 
-        return array_filter((array)$card_info, fn($card) => !empty((array)$card));
+        $this->_cached_cards[$deck] = array_filter((array)$card_info, fn($card) => !empty((array)$card));
+        return $this->_cached_cards[$deck];
     }
 
     public function get_all_notes(string $deck = DECK_NAME)
     {
+        if (isset($this->_cached_notes[$deck])) {
+            return $this->_cached_notes[$deck];
+        }
+
         $note_ids = self::anki_connect('findNotes', ['query' => $deck])->result;
         $note_info = self::anki_connect('notesInfo', ['notes' => $note_ids])->result;
 
-        return array_values(array_filter((array)$note_info, fn($note) => !empty((array)$note)));
-    }
-
-        return array_filter((array)$note_info, fn($note) => !empty((array)$note));
+        $this->_cached_notes[$deck] = array_values(array_filter((array)$note_info, fn($note) => !empty((array)$note)));
+        return $this->_cached_notes[$deck];
     }
 
     /**
