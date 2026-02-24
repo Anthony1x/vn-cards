@@ -31,6 +31,7 @@ done
 
 FILE="ankirecording.opus"
 OUTFILE="$OUTDIR/$FILE"
+EDITED_FILE="$OUTDIR/EDITED_$FILE"
 
 # concat + transcode to opus in a single ffmpeg call
 ffmpeg -hide_banner -loglevel error -f concat -safe 0 -i "$TMPLIST" \
@@ -42,17 +43,22 @@ rm -f "$TMPLIST"
 notify-send -u low -a ankivn -r 6969 "Saved: $OUTFILE"
 
 # open immediately in mpv (non-blocking)
-mpv --force-window=yes $OUTFILE
+mpv --force-window=yes "$OUTFILE"
 
-# Delete the original...
-rm $OUTFILE
-
-# ...and rename the edit to have the original filename
-mv "$OUTDIR/EDITED_$FILE" "$OUTFILE"
+# Check if an edited file was created (by an mpv script)
+if [ -f "$EDITED_FILE" ]; then
+    # Delete the original...
+    rm -f "$OUTFILE"
+    # ...and rename the edit to have the original filename
+    mv "$EDITED_FILE" "$OUTFILE"
+else
+    notify-send -u normal -a ankivn -r 6969 "No edited file found, using original."
+fi
 
 # After cutting the file we run the script to add a screenshot and everything to anki
-/home/anthony/Documents/Dev/vn-cards/capture.sh
+SCRIPT_DIR="$(dirname "$(realpath "$0")")"
+"$SCRIPT_DIR/capture.sh"
 
 # Finally, we clean up our mess
-rm $OUTFILE
+rm -f "$OUTFILE"
 

@@ -9,11 +9,22 @@
 #
 #==============================================================================
 
+set -e
+
+# --- Check Dependencies ---
+for cmd in scrot pw-record xdotool php; do
+    if ! command -v "$cmd" >/dev/null 2>&1; then
+        notify-send -u critical -a ankivn -r 6969 "Error: '$cmd' is not installed."
+        exit 1
+    fi
+done
+
 # --- Load Environment Variables ---
 script_dir=$(dirname "$0")
 env_file="$script_dir/.env"
 
 if [ -f "$env_file" ]; then
+    # shellcheck source=/dev/null
     source "$env_file"
 else
     notify-send -u critical -a ankivn -r 6969 "Error: .env file not found at $env_file - consult the example .env"
@@ -29,7 +40,7 @@ audio="/tmp/ankirecording.opus"
 # and replaces the original with the thumbnail.
 take_screenshot() {
     # -a selects an area, -t creates a thumbnail of the given size (0x600)
-    scrot -a $SCROT_POSITION "$screenshot" -t 0x600
+    scrot -a "$SCROT_POSITION" "$screenshot" -t 0x600
 
     # Remove the original, full-resolution screenshot
     rm "$screenshot"
@@ -46,16 +57,16 @@ if [ "$1" = "-r" ] || [ "$1" = "--record" ]; then
     # Toggles audio recording.
 
     # Check if pw-record is already running
-    if pgrep pw-record; then
+    if pgrep pw-record > /dev/null; then
         # --- Stop Recording ---
-        pkill pw-record
+        pkill pw-record || true
         notify-send -u low -a ankivn -r 6969 "Recording finished"
 
         # Process the captured screenshot and audio
         php "$PHP_SCRIPT"
 
         # Clean up temporary files
-        rm "$screenshot" "$audio"
+        rm -f "$screenshot" "$audio"
     else
         # --- Start Recording ---
         take_screenshot
@@ -81,6 +92,6 @@ else
     php "$PHP_SCRIPT"
 
     # Clean up the screenshot
-    rm "$screenshot"
+    rm -f "$screenshot"
 
 fi
