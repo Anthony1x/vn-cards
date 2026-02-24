@@ -339,6 +339,35 @@ class AnkiClient
             $padding_length = $max_display_width - $current_display_width;
             $padding = str_repeat(' ', $padding_length);
             echo $key . $padding . " |\t{$value['Count']}\t| {$value['Freq']}\n";
+
+    /**
+     * Prints all Yojijukugo (four character kanji compounds) in the deck.
+     * Only includes compounds consisting entirely of kanji.
+     */
+    public function getCompounds(int $characters = 4)
+    {
+        $notes = $this->get_all_notes();
+        $compounds = [];
+
+        foreach ($notes as $note) {
+            $value = $note->fields->{FRONT_FIELD}->value ?? '';
+            // Match exactly 4 kanji characters
+            if (preg_match('/^\p{Han}{' . $characters . '}$/u', $value)) {
+                $compounds[] = $value;
+            }
+        }
+
+        $compounds = array_unique($compounds);
+
+        echo "Found " . count($compounds) . " $characters-chacter compounds:\n";
+
+        $compound_chunks = array_chunk($compounds, 15);
+
+        foreach ($compound_chunks as $compound_chunk) {
+            foreach ($compound_chunk as $compound) {
+                echo "$compound ";
+            }
+            echo "\n";
         }
     }
 }
