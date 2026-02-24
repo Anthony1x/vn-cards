@@ -10,7 +10,20 @@ enum Urgency: string
 function anki_log(string $message, Urgency $loglevel = Urgency::low)
 {
     // See `man notify-send` if you want to know what all these do.
-    shell_exec("notify-send -a ankivn -r 6969 -u {$loglevel->name} -t 5000 '$message'");
+    $safe_message = escapeshellarg($message);
+    shell_exec("notify-send -a ankivn -r 6969 -u {$loglevel->name} -t 5000 $safe_message");
+}
+
+if (!function_exists('array_any')) {
+    function array_any(array $array, callable $callback): bool
+    {
+        foreach ($array as $key => $value) {
+            if ($callback($value, $key)) {
+                return true;
+            }
+        }
+        return false;
+    }
 }
 
 /**
@@ -20,7 +33,12 @@ function anki_log(string $message, Urgency $loglevel = Urgency::low)
  */
 function define_keys()
 {
-    $env = parse_ini_file('.env');
+    $env_path = __DIR__ . '/.env';
+    if (!file_exists($env_path)) {
+        anki_log("No .env file found at $env_path", Urgency::critical);
+        throw new Exception("No .env file found.");
+    }
+    $env = parse_ini_file($env_path);
 
     $necessary_keys = [
         $env['DECK_NAME'],

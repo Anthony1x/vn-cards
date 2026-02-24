@@ -23,6 +23,7 @@ class AnkiClient
      * @param string $action
      * @param array $params
      * @return mixed
+     * @throws RuntimeException
      */
     public function anki_connect(string $action, array $params)
     {
@@ -38,7 +39,7 @@ class AnkiClient
                 'action' => $action,
                 'params' => empty($params) ? (object)[] : $params,
                 'version' => 6
-            ]),
+            ], JSON_THROW_ON_ERROR),
             CURLOPT_HTTPHEADER => [
                 "Content-Type: application/json",
                 "accept: application/json"
@@ -49,24 +50,32 @@ class AnkiClient
         $err = curl_error($curl);
 
         if ($err) {
-            anki_log("cURL reported error: $err, aborting.", Urgency::critical);
-            die;
+            $msg = "cURL reported error: $err";
+            anki_log($msg, Urgency::critical);
+            throw new RuntimeException($msg);
         }
 
-        return json_decode($response);
+        try {
+            return json_decode($response, false, 512, JSON_THROW_ON_ERROR);
+        } catch (JsonException $e) {
+            $msg = "JSON decode error: " . $e->getMessage();
+            anki_log($msg, Urgency::critical);
+            throw new RuntimeException($msg);
+        }
     }
 
     public function get_latest_card()
     {
-        $last_note = self::anki_connect('findNotes',  ['query' => 'added:1'])->result;
+        $result = self::anki_connect('findNotes',  ['query' => 'added:1'])->result;
 
-        if (empty($last_note) || is_null($last_note)) {
-            anki_log('No recently added cards found! Aborting.', Urgency::critical);
-            die;
+        if (empty($result) || is_null($result)) {
+            $msg = 'No recently added cards found!';
+            anki_log($msg, Urgency::critical);
+            throw new RuntimeException($msg);
         }
 
         # If there is more than one note, the one with the biggest integer is the newest one.
-        $last_note = count($last_note) === 1 ? $last_note[0] :  max(...$last_note);
+        $last_note = count($result) === 1 ? $result[0] : max(...$result);
 
         return $last_note;
     }
@@ -120,7 +129,8 @@ class AnkiClient
             $tag_data = [];
             foreach ($note_info as $note) {
                 // Ensure the FreqSort field exists and has a numeric value. Default to 9999999 if not.
-                $freq_value = (int)($note->fields->FreqSort->value ?? 9999999);
+                // Using null-safe operator logic compatible with older PHP just in case, or simply isset.
+                $freq_value = (int)(isset($note->fields->FreqSort->value) ? $note->fields->FreqSort->value : 9999999);
 
                 // If the frequency is the default placeholder, skip this card for stats.
                 if ($freq_value === 9999999) {
@@ -275,18 +285,19 @@ class AnkiClient
         $last_note = self::get_latest_card();
         $note_info = self::anki_connect('notesInfo', ['notes' => [$last_note]]);
 
-        if (is_null($note_info)) {
-            anki_log('No note info! Aborting.', Urgency::critical);
-            die;
+        if (is_null($note_info) || empty($note_info->result)) {
+            $msg = 'No note info! Aborting.';
+            anki_log($msg, Urgency::critical);
+            throw new RuntimeException($msg);
         }
 
         $word = $note_info->result[0]->fields->{FRONT_FIELD}->value;
-
         $current_image = $note_info->result[0]->fields->{IMAGE_FIELD}->value;
 
         if (!empty($current_image) && $current_image != '<img src="">') {
-            anki_log("Image field in newest card ({$word}) is not empty! Aborting");
-            die;
+            $msg = "Image field in newest card ({$word}) is not empty! Aborting";
+            anki_log($msg, Urgency::critical);
+            throw new RuntimeException($msg);
         }
 
         $new_fields = [
