@@ -33,7 +33,7 @@ if (!function_exists('array_any')) {
  */
 function define_keys()
 {
-    $env_path = __DIR__ . '/.env';
+    $env_path = '../.env';
     if (!file_exists($env_path)) {
         anki_log("No .env file found at $env_path", Urgency::critical);
         throw new Exception("No .env file found.");

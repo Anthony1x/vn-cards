@@ -3,5 +3,10 @@
         "bramus/router": "^1.6",
         "ext-curl": "*",
         "ext-json": "*"
+    },
+    "autoload": {
+        "classmap": [
+            "src/"
+        ]
     }
 }

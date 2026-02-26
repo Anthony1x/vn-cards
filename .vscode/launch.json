@@ -27,7 +27,7 @@
             "name": "Launch get_cards.php",
             "type": "php",
             "request": "launch",
-            "program": "${workspaceFolder}/get_cards.php",
+            "program": "${workspaceFolder}/src/get_cards.php",
             "cwd": "${fileDirname}",
             "runtimeArgs": [
                 "-dxdebug.start_with_request=yes"
