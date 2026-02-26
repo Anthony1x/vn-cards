@@ -7,7 +7,7 @@ Over time, this has grown to be a general purpose anki tool that can do all sort
 
 Rename/copy the `.env.example` to `.env` and redefine the variables to suit your setup.
 
-Simply execute the `capture.sh [OPTION]` after creating a card.
+Simply execute the `scripts/capture.sh [OPTION]` after creating a card.
 
 To record audio, pass the `--record` flag. To stop recording audio, execute the script again (also with the `record` flag).
 
