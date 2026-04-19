@@ -1,5 +1,5 @@
 # vn-cards
-Linux tool to add a screenshot and audio anki cards, specifically made for visual novels, but can be used on anything.
+Linux tool to add a screenshot and audio to anki cards, specifically made for visual novels, but can be used on anything.
 
 Over time, this has grown to be a general purpose anki tool that can do all sorts of stuff.
 
