@@ -90,6 +90,12 @@ class AnkiClient
         ]);
     }
 
+    /**
+     * This is slow. but has some information `get_all_notes` does not have.
+     *
+     * @param string $deck
+     * @return mixed
+     */
     public function get_all_cards(string $deck = DECK_NAME)
     {
         if (isset($this->_cached_cards[$deck])) {
@@ -116,6 +122,21 @@ class AnkiClient
         return $this->_cached_notes[$deck];
     }
 
+    private function get_normalized_tags(array $tags): array
+    {
+        $normalized = array_map(function ($tag) {
+            if (str_starts_with($tag, "Book::")) {
+                $parts = explode("::", $tag);
+                if (count($parts) > 2) {
+                    return $parts[0] . "::" . $parts[1];
+                }
+            }
+            return $tag;
+        }, $tags);
+
+        return array_unique($normalized);
+    }
+
     /**
      *
      * @param bool $with_frequency
@@ -137,7 +158,7 @@ class AnkiClient
                     continue; // Move to the next note in the loop
                 }
 
-                foreach ($note->tags as $tag) {
+                foreach ($this->get_normalized_tags($note->tags) as $tag) {
                     if (!isset($tag_data[$tag])) {
                         // Initialize with structure for count and total frequency
                         $tag_data[$tag] = ['Count' => 0, 'TotalFreq' => 0];
@@ -166,7 +187,7 @@ class AnkiClient
             // Original functionality for when $with_frequency is false
             $tag_counts = [];
             foreach ($note_info as $note) {
-                foreach ($note->tags as $tag) {
+                foreach ($this->get_normalized_tags($note->tags) as $tag) {
                     if (!isset($tag_counts[$tag])) {
                         $tag_counts[$tag] = 1;
                     } else {
