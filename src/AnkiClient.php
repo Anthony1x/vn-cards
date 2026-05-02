@@ -357,6 +357,13 @@ class AnkiClient
             $max_freq_width = max($max_freq_width, strlen((string)$value['Freq']));
         }
 
+        $colors = [
+            'VN'     => "\033[1;36m", // Bold Cyan
+            'Book'   => "\033[1;33m", // Bold Yellow
+            'アニメ' => "\033[1;35m", // Bold Magenta
+            '漫画'   => "\033[1;32m", // Bold Green
+        ];
+
         foreach ($cards as $key => $value) {
             $current_key_width = mb_strwidth($key, 'UTF-8');
             $key_padding = str_repeat(' ', $max_key_width - $current_key_width);
@@ -367,7 +374,15 @@ class AnkiClient
             $freq_str = (string)$value['Freq'];
             $freq_padding = str_repeat(' ', $max_freq_width - strlen($freq_str));
 
-            echo "{$key}{$key_padding} | {$count_padding}{$count_str} | {$freq_padding}{$freq_str}\n";
+            $display_key = $key;
+            foreach ($colors as $prefix => $color_code) {
+                if (str_starts_with($key, $prefix . "::") || $key === $prefix) {
+                    $display_key = $color_code . $key . "\033[0m";
+                    break;
+                }
+            }
+
+            echo "{$display_key}{$key_padding} | {$count_padding}{$count_str} | {$freq_padding}{$freq_str}\n";
         }
     }
 
@@ -375,7 +390,7 @@ class AnkiClient
      * Prints all Yojijukugo (four character kanji compounds) in the deck.
      * Only includes compounds consisting entirely of kanji.
      */
-    public function getCompounds(int $characters = 4)
+    public function get_compounds(int $characters = 4)
     {
         $notes = $this->get_all_notes();
         $compounds = [];
