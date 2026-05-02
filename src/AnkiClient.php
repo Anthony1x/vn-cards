@@ -407,13 +407,132 @@ class AnkiClient
 
         echo "Found " . count($compounds) . " $characters-chacter compounds:\n";
 
-        $compound_chunks = array_chunk($compounds, 15);
+        $compound_chunks = array_chunk($compounds, 13);
 
         foreach ($compound_chunks as $compound_chunk) {
             foreach ($compound_chunk as $compound) {
                 echo "$compound ";
             }
             echo "\n";
+        }
+    }
+
+    /**
+     * Reassigns random frequencies to cards that have the placeholder value 9999999.
+     * The random value is between the lowest and highest frequencies currently in the deck.
+     * These assignments are saved to 'assigned_frequencies.json' to ensure consistency.
+     */
+    public function reassign_placeholder_frequencies()
+    {
+        $json_path = __DIR__ . '/../assigned_frequencies.json';
+        $assigned_frequencies = [];
+        if (file_exists($json_path)) {
+            $assigned_frequencies = json_decode(file_get_contents($json_path), true) ?: [];
+        }
+
+        $notes = $this->get_all_notes();
+        $placeholder_notes = [];
+
+        foreach ($notes as $note) {
+            $freq_value = (int)($note->fields->FreqSort->value ?? 9999999);
+            if ($freq_value === 9999999) {
+                $placeholder_notes[] = $note;
+            }
+        }
+
+        if (empty($placeholder_notes)) {
+            echo "No placeholder notes found.\n";
+            return;
+        }
+
+        $min_freq = 10000;
+        $max_freq = 50000;
+
+        echo "Valid frequency range: $min_freq to $max_freq\n";
+        echo "Found " . count($placeholder_notes) . " placeholder notes.\n";
+
+        $updated_count = 0;
+        foreach ($placeholder_notes as $note) {
+            $note_id = (string)$note->noteId;
+            $new_freq = $assigned_frequencies[$note_id] ?? rand($min_freq, $max_freq);
+            $assigned_frequencies[$note_id] = $new_freq;
+
+            $this->anki_connect('updateNoteFields', [
+                'note' => [
+                    'id' => $note->noteId,
+                    'fields' => [
+                        'FreqSort' => (string)$new_freq
+                    ]
+                ]
+            ]);
+            $updated_count++;
+        }
+
+        file_put_contents($json_path, json_encode($assigned_frequencies, JSON_PRETTY_PRINT));
+        echo "Successfully updated $updated_count notes.\n";
+    }
+
+    public function get_cards_without_bold_furigana()
+    {
+        $notes = $this->get_all_notes();
+
+        $no_bold = array_filter($notes, fn($note) => !str_contains($note->fields->Sentence->value, "<b>"));
+
+        foreach ($no_bold as $note) {
+            $wordToBold = $note->fields->Expression->value;
+            $sentence = $note->fields->Sentence->value;
+
+            $new = str_replace($wordToBold, "<b>$wordToBold</b>", $sentence);
+
+            // if ($sentence !== $new) {
+            echo $wordToBold . "\n";
+            echo "Old: " . $sentence . "\n";
+            echo "New: " . $new;
+            echo "\n\n";
+
+            // $this->anki_connect('updateNoteFields', [
+            //     'note' => [
+            //         'id' => $note->noteId,
+            //         'fields' => [
+            //             'Sentence' => $new
+            //         ]
+            //     ]
+            // ]);
+            // }
+        }
+    }
+
+    public function contract_dots()
+    {
+        $notes = $this->get_all_notes();
+
+        foreach ($notes as $note) {
+            $input1 = $note->fields->Sentence->value;
+            $input2 = $note->fields->SentenceFurigana->value;
+
+            $pattern = '/・{4,}/u';
+            $replace = '・';
+
+            if (!str_contains($input1, $replace) && !str_contains($input2, $replace)) {
+                continue;
+            }
+
+            $output1 = preg_replace($pattern, $replace, $input1);
+            $output2 = preg_replace($pattern, $replace, $input2);
+
+            // $this->anki_connect('updateNoteFields', [
+            //     'note' => [
+            //         'id' => $note->noteId,
+            //         'fields' => [
+            //             'Sentence' => $output1,
+            //             'SentenceFurigana' => $output2
+            //         ]
+            //     ]
+            // ]);
+
+            echo "Input: $input1\n";
+            echo "Output: $output1\n";
+            echo "----------\n";
         }
     }
 }
