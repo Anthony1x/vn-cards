@@ -61,4 +61,3 @@ SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 
 # Finally, we clean up our mess
 rm -f "$OUTFILE"
-

@@ -21,7 +21,7 @@ done
 
 # --- Load Environment Variables ---
 script_dir=$(dirname "$0")
-env_file="$script_dir/.env"
+env_file="$script_dir/../.env"
 
 if [ -f "$env_file" ]; then
     # shellcheck source=/dev/null
@@ -57,7 +57,7 @@ if [ "$1" = "-r" ] || [ "$1" = "--record" ]; then
     # Toggles audio recording.
 
     # Check if pw-record is already running
-    if pgrep pw-record > /dev/null; then
+    if pgrep pw-record >/dev/null; then
         # --- Stop Recording ---
         pkill pw-record || true
         notify-send -u low -a ankivn -r 6969 "Recording finished"
