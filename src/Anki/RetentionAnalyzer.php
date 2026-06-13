@@ -52,22 +52,22 @@ class RetentionAnalyzer
             $tag_data = [];
             foreach ($notes as $note) {
                 $freq_value = (int)($note->fields->FreqSort->value ?? 9999999);
-                if ($freq_value === 9999999) {
-                    continue;
-                }
 
                 foreach ($this->getNormalizedTags($note->tags) as $tag) {
                     if (!isset($tag_data[$tag])) {
-                        $tag_data[$tag] = ['Count' => 0, 'TotalFreq' => 0];
+                        $tag_data[$tag] = ['Count' => 0, 'TotalFreq' => 0, 'FreqCount' => 0];
                     }
                     $tag_data[$tag]['Count']++;
-                    $tag_data[$tag]['TotalFreq'] += $freq_value;
+                    if ($freq_value !== 9999999) {
+                        $tag_data[$tag]['TotalFreq'] += $freq_value;
+                        $tag_data[$tag]['FreqCount']++;
+                    }
                 }
             }
 
             foreach ($tag_data as $tag => &$data) {
-                $data['Freq'] = $data['Count'] > 0 ? (int)number_format($data['TotalFreq'] / $data['Count'], 0, '.', '') : 0;
-                unset($data['TotalFreq']);
+                $data['Freq'] = $data['FreqCount'] > 0 ? (int)round($data['TotalFreq'] / $data['FreqCount']) : 0;
+                unset($data['TotalFreq'], $data['FreqCount']);
             }
 
             uasort($tag_data, fn($a, $b) => $b['Count'] <=> $a['Count']);
@@ -161,7 +161,7 @@ class RetentionAnalyzer
         foreach ($source_stats as &$stats) {
             $stats['avg_freq'] = $stats['freq_count'] > 0 ? (int)round($stats['total_freq'] / $stats['freq_count']) : 0;
             $stats['retention_rate'] = $stats['reps'] > 0 ? (float)round(($stats['reps'] - $stats['lapses']) / $stats['reps'], 4) : 1.0;
-            
+
             // Cleanup temporary aggregations
             unset($stats['total_freq']);
             unset($stats['freq_count']);
@@ -219,6 +219,76 @@ class RetentionAnalyzer
             'average' => $average,
             'total' => count($notes),
         ];
+    }
+
+    public function getKanjiFirstAppearances(): array
+    {
+        $parentDeck = '日本語';
+        $miningDeck = "deck:{$parentDeck}::Mining";
+        $frontField = Config::get('FRONT_FIELD');
+        $starterDeckNames = [
+            "Core 2.3k",
+            "Kaishi 1.5k",
+        ];
+
+        $starterNoteIds = [];
+        foreach ($starterDeckNames as $name) {
+            $deckQuery = "deck:\"{$parentDeck}::{$name}\"";
+            $ids = $this->anki->send('findNotes', ['query' => $deckQuery])->result;
+            if (!empty($ids)) {
+                $starterNoteIds = array_merge($starterNoteIds, $ids);
+            }
+        }
+        $starterNoteIdSet = array_flip($starterNoteIds);
+
+        $miningNotes = $this->cardManager->getAllNotes($miningDeck);
+
+        $starterNotes = [];
+        foreach ($starterDeckNames as $name) {
+            $deckQuery = "deck:\"{$parentDeck}::{$name}\"";
+            $notes = $this->cardManager->getAllNotes($deckQuery);
+            $starterNotes = array_merge($starterNotes, $notes);
+        }
+
+        $allNotes = array_merge($miningNotes, $starterNotes);
+
+        usort($allNotes, fn($a, $b) => (int)$a->noteId <=> (int)$b->noteId);
+
+        $seenKanji = [];
+        $firstFoundPerTag = [];
+
+        foreach ($allNotes as $note) {
+            $expression = $note->fields->{$frontField}->value ?? '';
+            if (empty($expression)) {
+                $expression = $note->fields->Word->value ?? '';
+            }
+            preg_match_all('/\p{Han}/u', $expression, $matches);
+            $kanjiChars = $matches[0] ?? [];
+
+            $noteId = (int)$note->noteId;
+            $isStarter = isset($starterNoteIdSet[$noteId]);
+
+            foreach ($kanjiChars as $kanji) {
+                if (isset($seenKanji[$kanji])) {
+                    continue;
+                }
+                $seenKanji[$kanji] = true;
+
+                if ($isStarter) {
+                    continue;
+                }
+
+                $tags = $this->getNormalizedTags($note->tags);
+                foreach ($tags as $tag) {
+                    if ($tag === 'NSFW') {
+                        continue;
+                    }
+                    $firstFoundPerTag[$tag] = ($firstFoundPerTag[$tag] ?? 0) + 1;
+                }
+            }
+        }
+
+        return $firstFoundPerTag;
     }
 
     private function getNormalizedTags(array $tags): array

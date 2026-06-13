@@ -8,17 +8,48 @@ use App\Core\Config;
 
 class CliFormatter
 {
-    public static function displayFrequencyTable(array $cards): void
+    public static function displayFrequencyTable(array $cards, ?int $totalNotes = null, ?int $summaryFreq = null): void
     {
         $max_key_width = 0;
         $max_count_width = 0;
+        $max_first_width = 0;
         $max_freq_width = 0;
+
+        $totalCount = 0;
+        $totalFirst = 0;
+        $totalFreq = 0;
+        $tagCount = count($cards);
 
         foreach ($cards as $key => $value) {
             $max_key_width = max($max_key_width, mb_strwidth((string)$key, 'UTF-8'));
             $max_count_width = max($max_count_width, strlen((string)$value['Count']));
-            $max_freq_width = max($max_freq_width, strlen((string)$value['Freq']));
+            $max_first_width = max($max_first_width, strlen((string)($value['First'] ?? '0')));
+            $max_freq_width = max($max_freq_width, strlen((string)($value['Freq'] ?? '')));
+
+            $totalCount += $value['Count'];
+            $totalFirst += $value['First'] ?? 0;
+            $totalFreq += $value['Freq'] ?? 0;
         }
+
+        $avgFreq = $summaryFreq ?? ($tagCount > 0 ? (int)round($totalFreq / $tagCount) : 0);
+        $summaryCount = $totalNotes ?? $totalCount;
+
+        $max_key_width = max($max_key_width, 5);
+        $max_count_width = max($max_count_width, strlen((string)$summaryCount));
+        $max_first_width = max($max_first_width, strlen((string)$totalFirst));
+        $max_freq_width = max($max_freq_width, strlen((string)$avgFreq));
+
+        $max_key_width = max($max_key_width, 3);
+        $max_count_width = max($max_count_width, 5);
+        $max_first_width = max($max_first_width, 5);
+        $max_freq_width = max($max_freq_width, 4);
+
+        $header = sprintf(
+            "%-{$max_key_width}s | %{$max_count_width}s | %{$max_first_width}s | %{$max_freq_width}s",
+            'Tag', 'Count', 'First', 'Freq'
+        );
+        echo $header . "\n";
+        echo str_repeat('-', strlen($header)) . "\n";
 
         $colors = [
             'VN'     => "\033[1;36m", // Bold Cyan
@@ -34,6 +65,9 @@ class CliFormatter
             $count_str = (string)$value['Count'];
             $count_padding = str_repeat(' ', $max_count_width - strlen($count_str));
 
+            $first_str = (string)($value['First'] ?? '0');
+            $first_padding = str_repeat(' ', $max_first_width - strlen($first_str));
+
             $freq_str = (string)$value['Freq'];
             $freq_padding = str_repeat(' ', $max_freq_width - strlen($freq_str));
 
@@ -45,8 +79,15 @@ class CliFormatter
                 }
             }
 
-            echo "{$display_key}{$key_padding} | {$count_padding}{$count_str} | {$freq_padding}{$freq_str}\n";
+            echo "{$display_key}{$key_padding} | {$count_padding}{$count_str} | {$first_padding}{$first_str} | {$freq_padding}{$freq_str}\n";
         }
+
+        echo str_repeat('-', strlen($header)) . "\n";
+        $tag_padding = str_repeat(' ', $max_key_width - 5);
+        $count_padding = str_repeat(' ', $max_count_width - strlen((string)$summaryCount));
+        $first_padding = str_repeat(' ', $max_first_width - strlen((string)$totalFirst));
+        $freq_padding = str_repeat(' ', $max_freq_width - strlen((string)$avgFreq));
+        echo "Total{$tag_padding} | {$count_padding}{$summaryCount} | {$first_padding}{$totalFirst} | {$freq_padding}{$avgFreq}\n";
     }
 
     public static function displayRetentionTable(array $cards): void

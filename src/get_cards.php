@@ -9,6 +9,7 @@ use App\Anki\CardManager;
 use App\Anki\MediaConverter;
 use App\Anki\RetentionAnalyzer;
 use App\Cli\CliFormatter;
+use App\Core\Config;
 
 $anki = new AnkiConnect();
 $cardManager = new CardManager($anki);
@@ -50,7 +51,23 @@ while (!empty($args)) {
 
         case 'frequency':
             $cards = $retentionAnalyzer->getCardsByTag(true);
-            CliFormatter::displayFrequencyTable($cards);
+            $firstFound = $retentionAnalyzer->getKanjiFirstAppearances();
+            foreach ($cards as $tag => &$data) {
+                $data['First'] = $firstFound[$tag] ?? 0;
+            }
+            unset($data);
+            $notes = $cardManager->getAllNotes(Config::get('DECK_NAME'));
+            $totalFreqSum = 0;
+            $totalFreqCount = 0;
+            foreach ($notes as $note) {
+                $fv = (int)($note->fields->FreqSort->value ?? 9999999);
+                if ($fv !== 9999999) {
+                    $totalFreqSum += $fv;
+                    $totalFreqCount++;
+                }
+            }
+            $overallFreq = $totalFreqCount > 0 ? (int)round($totalFreqSum / $totalFreqCount) : 0;
+            CliFormatter::displayFrequencyTable($cards, count($notes), $overallFreq);
             break;
 
         case 'replace':
