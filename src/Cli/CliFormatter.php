@@ -52,12 +52,19 @@ class CliFormatter
         $max_count_width = max($max_count_width, 5);
         $max_freq_width = max($max_freq_width, 4);
 
-        $header = sprintf(
-            "%-{$max_key_width}s | %{$max_count_width}s | %-{$max_first_width}s | %{$max_freq_width}s",
-            'Tag', 'Count', 'First', 'Freq'
-        );
+        $keyPW = $max_key_width + 2;
+        $countPW = $max_count_width + 2;
+        $firstPW = $max_first_width + 2;
+        $freqPW = $max_freq_width + 2;
+
+        $top = '┌' . str_repeat('─', $keyPW) . '┬' . str_repeat('─', $countPW) . '┬' . str_repeat('─', $firstPW) . '┬' . str_repeat('─', $freqPW) . '┐';
+        echo $top . "\n";
+
+        $header = '│ ' . sprintf("%-{$max_key_width}s │ %{$max_count_width}s │ %-{$max_first_width}s │ %{$max_freq_width}s", 'Tag', 'Count', 'First', 'Freq') . ' │';
         echo $header . "\n";
-        echo str_repeat('-', strlen($header)) . "\n";
+
+        $sep = '├' . str_repeat('─', $keyPW) . '┼' . str_repeat('─', $countPW) . '┼' . str_repeat('─', $firstPW) . '┼' . str_repeat('─', $freqPW) . '┤';
+        echo $sep . "\n";
 
         $colors = [
             'VN'     => "\033[1;36m", // Bold Cyan
@@ -90,10 +97,11 @@ class CliFormatter
                 }
             }
 
-            echo "{$display_key}{$key_padding} | {$count_padding}{$count_str} | {$first_str}{$first_padding} | {$freq_padding}{$freq_str}\n";
+            echo "│ {$display_key}{$key_padding} │ {$count_padding}{$count_str} │ {$first_str}{$first_padding} │ {$freq_padding}{$freq_str} │\n";
         }
 
-        echo str_repeat('-', strlen($header)) . "\n";
+        $sep2 = '├' . str_repeat('─', $keyPW) . '┼' . str_repeat('─', $countPW) . '┼' . str_repeat('─', $firstPW) . '┼' . str_repeat('─', $freqPW) . '┤';
+        echo $sep2 . "\n";
         $summaryPctPart = '-' . sprintf('%5s', $summaryPct) . '%';
         $summaryCountPart = str_pad((string)$totalFirst, $max_first_count_width, ' ', STR_PAD_LEFT);
         $summaryFirstStr = $summaryCountPart . ' ' . $summaryPctPart;
@@ -101,7 +109,10 @@ class CliFormatter
         $count_padding = str_repeat(' ', $max_count_width - strlen((string)$summaryCount));
         $first_padding = str_repeat(' ', $max_first_width - strlen($summaryFirstStr));
         $freq_padding = str_repeat(' ', $max_freq_width - strlen((string)$avgFreq));
-        echo "Total{$tag_padding} | {$count_padding}{$summaryCount} | {$summaryFirstStr}{$first_padding} | {$freq_padding}{$avgFreq}\n";
+        echo "│ Total{$tag_padding} │ {$count_padding}{$summaryCount} │ {$summaryFirstStr}{$first_padding} │ {$freq_padding}{$avgFreq} │\n";
+
+        $bottom = '└' . str_repeat('─', $keyPW) . '┴' . str_repeat('─', $countPW) . '┴' . str_repeat('─', $firstPW) . '┴' . str_repeat('─', $freqPW) . '┘';
+        echo $bottom . "\n";
     }
 
     public static function displayRetentionTable(array $cards): void
@@ -172,7 +183,7 @@ class CliFormatter
     public static function displayMediaStats(array $stats): void
     {
         echo "\nCard Media Statistics:\n";
-        echo str_repeat('-', 25) . "\n";
+        echo str_repeat('─', 25) . "\n";
         printf("%-18s: %d\n", "Image, No Audio", $stats['image_no_audio']);
         printf("%-18s: %d\n", "Image & Audio", $stats['image_audio']);
         printf("%-18s: %d\n", "Neither", $stats['neither']);
@@ -181,7 +192,7 @@ class CliFormatter
             printf("%-18s: %d\n", "Audio, No Image", $stats['audio_no_image']);
         }
 
-        echo str_repeat('-', 25) . "\n";
+        echo str_repeat('─', 25) . "\n";
         printf("%-18s: %d\n", "Total Cards", $stats['total']);
         echo "\n";
     }
@@ -189,7 +200,7 @@ class CliFormatter
     public static function displayDueStats(string $time, array $stats): void
     {
         echo "\nDue Statistics for: $time (Day {$stats['diffDays']})\n";
-        echo str_repeat('-', 40) . "\n";
+        echo str_repeat('─', 40) . "\n";
         printf("%-25s: %d\n", "Due on this day", $stats['onDay']);
         printf("%-25s: %d\n", "Total due from this day", $stats['cumulative']);
         echo "\n";
