@@ -12,7 +12,7 @@ class CliFormatter
     {
         $max_key_width = 0;
         $max_count_width = 0;
-        $max_first_width = 0;
+        $max_first_count_width = 0;
         $max_freq_width = 0;
 
         $totalCount = 0;
@@ -20,7 +20,7 @@ class CliFormatter
         $totalFreq = 0;
         $tagCount = count($cards);
 
-        $formattedFirst = [];
+        $firstData = [];
 
         foreach ($cards as $key => $value) {
             $max_key_width = max($max_key_width, mb_strwidth((string)$key, 'UTF-8'));
@@ -30,8 +30,8 @@ class CliFormatter
             $firstCount = $value['First'] ?? 0;
             $count = $value['Count'];
             $pct = $count > 0 ? number_format($firstCount / $count * 100, 1) : '0.0';
-            $formattedFirst[$key] = "{$firstCount} ({$pct}%)";
-            $max_first_width = max($max_first_width, strlen($formattedFirst[$key]));
+            $firstData[$key] = ['count' => $firstCount, 'pct' => $pct];
+            $max_first_count_width = max($max_first_count_width, strlen((string)$firstCount));
 
             $totalCount += $value['Count'];
             $totalFirst += $firstCount;
@@ -41,16 +41,15 @@ class CliFormatter
         $avgFreq = $summaryFreq ?? ($tagCount > 0 ? (int)round($totalFreq / $tagCount) : 0);
         $summaryCount = $totalNotes ?? $totalCount;
         $summaryPct = $summaryCount > 0 ? number_format($totalFirst / $summaryCount * 100, 1) : '0.0';
-        $summaryFirstStr = "{$totalFirst} ({$summaryPct}%)";
+        $max_first_count_width = max($max_first_count_width, strlen((string)$totalFirst));
 
         $max_key_width = max($max_key_width, 5);
         $max_count_width = max($max_count_width, strlen((string)$summaryCount));
-        $max_first_width = max($max_first_width, strlen($summaryFirstStr));
+        $max_first_width = max($max_first_count_width + 9, strlen('First'));
         $max_freq_width = max($max_freq_width, strlen((string)$avgFreq));
 
         $max_key_width = max($max_key_width, 3);
         $max_count_width = max($max_count_width, 5);
-        $max_first_width = max($max_first_width, strlen('First'));
         $max_freq_width = max($max_freq_width, 4);
 
         $header = sprintf(
@@ -74,7 +73,9 @@ class CliFormatter
             $count_str = (string)$value['Count'];
             $count_padding = str_repeat(' ', $max_count_width - strlen($count_str));
 
-            $first_str = $formattedFirst[$key];
+            $fd = $firstData[$key];
+            $pctPart = '(' . sprintf('%5s', $fd['pct']) . '%)';
+            $first_str = $fd['count'] . ' ' . $pctPart;
             $first_padding = str_repeat(' ', $max_first_width - strlen($first_str));
 
             $freq_str = (string)$value['Freq'];
@@ -92,6 +93,8 @@ class CliFormatter
         }
 
         echo str_repeat('-', strlen($header)) . "\n";
+        $summaryPctPart = '(' . sprintf('%5s', $summaryPct) . '%)';
+        $summaryFirstStr = $totalFirst . ' ' . $summaryPctPart;
         $tag_padding = str_repeat(' ', $max_key_width - 5);
         $count_padding = str_repeat(' ', $max_count_width - strlen((string)$summaryCount));
         $first_padding = str_repeat(' ', $max_first_width - strlen($summaryFirstStr));
