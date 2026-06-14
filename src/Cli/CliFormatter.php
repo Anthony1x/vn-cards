@@ -75,7 +75,8 @@ class CliFormatter
 
             $fd = $firstData[$key];
             $pctPart = '(' . sprintf('%5s', $fd['pct']) . '%)';
-            $first_str = $fd['count'] . ' ' . $pctPart;
+            $countPart = str_pad((string)$fd['count'], $max_first_count_width, ' ', STR_PAD_LEFT);
+            $first_str = $countPart . ' ' . $pctPart;
             $first_padding = str_repeat(' ', $max_first_width - strlen($first_str));
 
             $freq_str = (string)$value['Freq'];
@@ -94,7 +95,8 @@ class CliFormatter
 
         echo str_repeat('-', strlen($header)) . "\n";
         $summaryPctPart = '(' . sprintf('%5s', $summaryPct) . '%)';
-        $summaryFirstStr = $totalFirst . ' ' . $summaryPctPart;
+        $summaryCountPart = str_pad((string)$totalFirst, $max_first_count_width, ' ', STR_PAD_LEFT);
+        $summaryFirstStr = $summaryCountPart . ' ' . $summaryPctPart;
         $tag_padding = str_repeat(' ', $max_key_width - 5);
         $count_padding = str_repeat(' ', $max_count_width - strlen((string)$summaryCount));
         $first_padding = str_repeat(' ', $max_first_width - strlen($summaryFirstStr));
