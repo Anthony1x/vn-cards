@@ -378,7 +378,10 @@ class CardManager
 
             $this->updateNoteFields((int)$old->noteId, $fieldsToUpdate);
             
-            $tagsToAdd = array_unique(array_merge(["Retag"], $extraTags));
+            $newTags = $new->tags ?? [];
+            $tagsToAdd = !empty($newTags)
+                ? array_unique(array_merge($newTags, $extraTags))
+                : array_unique(array_merge(["Retag"], $extraTags));
             $this->addTags((int)$old->noteId, ...$tagsToAdd);
 
             echo "  -> Deleting the newer, redundant note...\n";
